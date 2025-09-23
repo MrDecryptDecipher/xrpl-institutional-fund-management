@@ -1,0 +1,253 @@
+Product Requirements Document (PRD): XRPL Institutional Tokenized Fund Management Protocol
+Executive Summary
+This Product Requirements Document defines the architecture, features, and specifications for an agentic, non-simplified, institutional-grade fund management protocol built exclusively on the XRP Ledger (XRPL). This protocol enables multi-asset tokenization, robust compliance controls, fund management features across jurisdictions, and advanced DeFi capabilities, leveraging the latest XRPL primitives: Multi-Purpose Tokens (MPT/XLS-33), Permissioned Domains (XLS-80), Decentralized Identity (DID/XLS-40), and Native Lending Protocols (XLS-65/66).
+
+1. Purpose and Scope
+The protocol will enable:
+
+Tokenization of any asset type (securities, RWAs, funds, exotics) as fully programmable, compliant blockchain tokens.
+
+Layered compliance, identity, access controls, and reporting for institutions across multiple jurisdictions.
+
+Decentralized, upgradeable fund operations: issuance, transfers, subscriptions/redemptions, asset management, lending, trading, governance, and audits.
+
+No vendor lock-in, full ledger-side validation, and deep agentic prevention of semantic simplification or hallucination: each primitive is implemented and validated according to latest XRPL specifications.
+
+2. Functional Architecture
+2.1 XRPL Ledger Primitives
+Tokenization Engine:
+Uses MPT (Multi-Purpose Token, XLS-33/XLS-89) standard for all issued shares, underlying assets, fund units, and derivatives. Supports:
+
+On-chain metadata (1024-byte URI, immutable)
+
+Configurable fixed/elastic supply
+
+Transfer fee collection
+
+Authorized holders (issuer-approved)
+
+Global and per-account lockback/clawback options
+
+Asset fractionalization, non-transferable features as required (credits, locked shares)
+
+Permissioned Domains (XLS-80):
+Implements programmable KYC/AML and institutional gating. Domains restrict access to DEXes, lending pools, governance, and fund actions:
+
+Credential-gated membership (via issued KYC credentials)
+
+Rule-based access control objects (Domain Owners, Domain Rules)
+
+Domain deletion/updating is gated to owner account; each change on-chain
+
+Privacy-preserving verification; no sensitive data on-chain
+
+Domain linking with Permissioned DEX or Lending objects
+
+Decentralized Identity (DID/XLS-40):
+
+Each protocol user must anchor a DID object per XRPL standards
+
+DIDs link bidirectionally to credential documents (W3C standards)
+
+DIDs persist across jurisdictions for universal portability
+
+Identity cannot be forged: mutual on-chain and off-chain referencing
+
+Credentials can be issued, revoked, verified for any fund action
+
+2.2 Fund Management Workflow
+2.2.1 Fund Creation and Asset Tokenization
+Setup:
+
+Deploy Fund smart contract (via Hooks or native account logic) with issuance rules, manager, and parameters
+
+Issue primary share tokens (MPT) with full on-chain and off-chain metadata (ISIN, prospectus hashes, custodial info)
+
+Issue all underlying/constituent assets as separate MPT tokens or fractionalized MPT batches
+
+Types Supported:
+
+Securities (bonds, equities, bills, cash instruments, mutual funds, ETFs)
+
+Real-world assets (real estate, commodities, artwork, infrastructure)
+
+Synthetic instruments (indexes, derivatives, custom baskets)
+
+Credit exposures (yield funds, lending pools as tokens)
+
+Hybrid products (multi-asset overlays)
+
+2.2.2 Subscription, Redemption, Transfers
+All actions are permissioned; only domain-credentialed accounts can interact
+
+Subscriptions/Redemptions:
+
+User submits request (on-chain), linker contracts instruct mint/burn of share tokens, all flows governed by MPT rules
+
+Each event creates audit trail with signed ledger references
+
+Transfers:
+
+On-chain transfer requires credential check (domain membership), off-ledger transfer may trigger KYC event
+
+Transfer fees credited per MPT settings, clawback initiatable by issuer if regulatory breach detected
+
+Reporting/Auditing:
+
+All ledger events are anchored to fund audit contracts (Hooks with custom memos)
+
+Real-time reports for NAV, AUM, compliance breaches, investor lists
+
+2.2.3 Trading and Asset Allocation
+Native DEX:
+
+MPT tokens trade directly on XRPL DEX, supporting AMM liquidity pools
+
+Permissioned DEX: Orders only fillable by credentialed, whitelisted accounts; all order matching linked to compliance hooks
+
+Automated Market-Making:
+
+AMM liquidity provisioning configurable per fund for basket and share tokens
+
+Integration with external oracles (DIA/Band) for asset pricing
+
+2.2.4 Lending and DeFi
+Native Lending Protocol (XLS-65/66):
+
+Fund can participate in or provide pooled lending
+
+Depositors and borrowers credential-gated
+
+Lending objects fully on-chain, first-loss, interest computation, repayments, defaults, capital protection
+
+2.3 Compliance, Identity & Governance
+2.3.1 Credential Issuance & Verification
+Credentials issued/accepted for KYC, AML, FATF, and jurisdictional approval per domain/fund
+
+Each credential linked to DID and verified as part of transaction permissioning
+
+Credential revocation and renewal is on-chain, creating immutable compliance logs
+
+2.3.2 International Compliance Matrix
+Fund supports multiple regulatory templates:
+
+MAS (Singapore), FINMA (Switzerland), ESMA/MiCA (EU), VARA/ADGM (UAE), SFC (Hong Kong), SEC (USA)
+
+xrpl_tokenized_funds_regulatory_compliance.csv
+Generated File
+Permissioned Domains linked to jurisdiction-specific rules; cross-domain operations logged and auditable
+
+Transfer, custody, and reporting rules per asset and investor type
+
+2.3.3 Governance & Upgrades
+All protocol parameters managed via governance contract
+
+Admin actions (pausing, upgrading, asset swapping, parameter tuning) require multisig of Fund Managers + compliance agent
+
+Hooks implement instant upgrade propagation or staged multi-signature rollouts
+
+3. Technical Specifications
+3.1 Ledger and Protocol Components
+XRPL version >= 2.6.0 with all amendments enabled: XLS-33 (MPT), XLS-80 (Permissioned Domain), XLS-40 (DID), XLS-65/66 (Lending)
+
+Programming: Use xrpl.js TypeScript/Javascript SDK; Hooks written in assembly-permitted Wasm or Rust
+
+APIs: Full support for HTTP/JSON-RPC and WebSocket API version 2
+
+Custody: Multi-signature with HSM integrations for institutional-grade key management
+
+Auditability: Each ledger event logs audit hash, memo field and links to off-chain reporting systems
+
+3.2 Security & Risk Protocols
+Key Management:
+
+All manager/issuer keys in HSM/MPC or equivalents; rotation on event of compromise
+
+Transaction Safety:
+
+Compliance checks before every mint/burn/transfer/trade; denial on credential mismatch
+
+All Hooks subjected to formal verification and code audits pre-deployment
+
+Data Privacy:
+
+Use privacy-preserving metadata for identity and credential linking; no PII on-chain
+
+4. Integration & Interoperability
+4.1 External Protocol Connectivity
+Oracles: DIA, Band, Chainlink nodes for asset pricing feeds
+
+Bridges: Axelar bridge for EVM asset representations (if allowed by fund scope)
+
+Custodians: API connections to enterprise-grade custodians (Ripple Custody, Fireblocks, etc.), with multi-sig and compliance audits
+
+4.2 Modular Extension
+System must allow relayer contracts or sidecar modules for basket composition, performance monitoring, investor registry, tax reporting, etc.
+
+All features upgradeable via on-chain governance and protocol hooks
+
+5. User Interfaces & Developer APIs
+5.1 APIs
+Javascript/TypeScript SDKs: Full reference implementation, with sample code for token mint/burn, credential issuance/verification, DID registration, permissioned domain management, lending pool operations
+
+WebSocket, REST, and CLI interfaces: Must expose all transaction types, fund events, reporting, and compliance logs
+
+Monitoring Dashboards: On-chain explorer for fund events, investor registry, and audit trails
+
+5.2 UX Requirements
+All administrative actions require stepwise confirmations and multi-factor authentication
+
+Investors and managers must have interfaces for credential status, trading, lending pool data, subscription/redemption workflow, compliance status
+
+6. Testing, Validation & Maintenance
+Reference Suite: Automated and manual test suites for all ledger events, Hooks, credential objects, transfer events, and permissioned domain logic.
+
+Upgrade and Downtime Management: Blue-green deployments for contract upgrades; failed amendments must not halt fund operation.
+
+Documentation: Fully versioned, non-simplified, protocol documentation for all primitives, workflows, and edge cases.
+
+7. Regulatory, Legal, and Audit
+Immutable Audit Logging: All compliance actions, admin changes, and fund transactions must log on-chain audit hashes, linking to off-chain reports
+
+Regulatory Templates: Protocol parameters deployable per-jurisdiction, parameters switchable/upgradable
+
+8. Example Implementation Scenarios
+Tokenized Money Market Fund:
+Fund contract deploys as MPT; only KYC'd investors can subscribe. Redemptions, fee collection, and clawbacks governed by compliance hooks.
+
+Tokenized Real Estate Fund:
+Assets represented as MPTs; transfers only allowed for credentialed and jurisdiction-assigned DIDs. AMM enables fraction trading.
+
+Structured Credit/Hybrid Fund:
+Asset baskets constructed via relayer contracts; investor yield computed based on holding time, weighted via time-based Hooks.
+
+9. Reference Code and Sample Flows
+MPT Issuance
+
+See [xrpl.js] for issuing token with metadata, transfer fee, authorized holders
+
+Credential Object Creation
+
+Direct credential issuance, update, and revocation flows via SDK; Domain membership enforced for all flows
+
+DID Registration
+
+DIDSet, DIDUpdate, DIDDelete flows
+
+Lending Pool Integration
+
+Deposit, borrow, repay, default-handling, and audit flows for pooled lending per XLS-65/66
+
+10. Glossary & Amendments Tracker
+XLS-33: Multi-Purpose Tokens (MPT)
+
+XLS-80: Permissioned Domains
+
+XLS-40/XLS-70: Decentralized Identity (DID)
+
+XLS-65/66: Native Lending and Vault Protocols
+
+XLS-30: AMM Integration
+
+Closing Statement
+This PRD ensures agentic, non-trivial, and unsimplified implementation. All primitives, compliance flows, asset management, governance, security, and reporting must be coded and validated against the latest XRPL amendments and specification; hallucination or simplification is non-compliant. No logic, workflow, or feature may be omitted or replaced with “best practices” or high-level wrappers—every component must be implemented as per canonical XRPL standards and linked regtech/identity amendments.
