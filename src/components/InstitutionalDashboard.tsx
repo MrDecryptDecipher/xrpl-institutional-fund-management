@@ -61,7 +61,7 @@ import {
   Code
 } from "lucide-react";
 import { InstitutionalFundCreator } from "./InstitutionalFundCreator";
-import { XRPLStandardsBadge } from "./XRPLStandardsBadge";
+import XRPLStandardsBadge from "./XRPLStandardsBadge";
 
 export function InstitutionalDashboard() {
   const [selectedTab, setSelectedTab] = useState<"overview" | "funds" | "analytics" | "compliance" | "risk" | "reports" | "xls_standards">("overview");

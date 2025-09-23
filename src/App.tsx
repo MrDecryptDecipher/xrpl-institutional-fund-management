@@ -2,9 +2,9 @@ import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
-import { InstitutionalDashboard } from "./components/InstitutionalDashboard";
-import { XRPLStandardsBadge } from "./components/XRPLStandardsBadge";
-import { CreatorAttribution } from "./components/CreatorAttribution";
+// import { InstitutionalDashboard } from "./components/InstitutionalDashboard";
+// import XRPLStandardsBadge from "./components/XRPLStandardsBadge.tsx";
+// import CreatorAttribution from "./components/CreatorAttribution.tsx";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Shield, Network, Key, Coins, BarChart3 } from "lucide-react";
 
@@ -24,12 +24,7 @@ export default function App() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent mb-3">
               XRPL Institutional Fund Management Protocol
             </h1>
-            <p className="text-gray-600 text-lg mb-6">Agentic, Non-Simplified, Institutional-Grade Fund Management</p>
-            
-            {/* XRPL Standards Integration Badge */}
-            <div className="mb-8">
-              <XRPLStandardsBadge />
-            </div>
+            <p className="text-gray-600 text-lg mb-6">Advanced Institutional-Grade Implementation</p>
             
             {/* Key Features Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -54,9 +49,6 @@ export default function App() {
                 <p className="text-xs text-gray-500">XLS-65/66</p>
               </div>
             </div>
-            
-            {/* Creator Attribution */}
-            <CreatorAttribution />
           </div>
           
           <div className="max-w-md mx-auto">
@@ -73,7 +65,10 @@ export default function App() {
         <SignOutButton />
       </div>
       <ErrorBoundary>
-        <InstitutionalDashboard />
+        <div className="p-8">
+          <h1>XRPL Institutional Fund Management Protocol</h1>
+          <p>Advanced institutional-grade implementation with comprehensive regulatory compliance.</p>
+        </div>
       </ErrorBoundary>
     </div>
   );

@@ -30,6 +30,7 @@ import type * as governance_multisig from "../governance/multisig.js";
 import type * as http from "../http.js";
 import type * as investors_management from "../investors/management.js";
 import type * as oracles_price_feeds from "../oracles/price_feeds.js";
+import type * as risk_risk_management from "../risk/risk_management.js";
 import type * as router from "../router.js";
 import type * as transactions_subscriptions from "../transactions/subscriptions.js";
 import type * as xrpl_client from "../xrpl/client.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "investors/management": typeof investors_management;
   "oracles/price_feeds": typeof oracles_price_feeds;
+  "risk/risk_management": typeof risk_risk_management;
   router: typeof router;
   "transactions/subscriptions": typeof transactions_subscriptions;
   "xrpl/client": typeof xrpl_client;
