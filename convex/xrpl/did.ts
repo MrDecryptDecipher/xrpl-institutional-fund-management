@@ -13,6 +13,33 @@ const XRPL_NETWORKS = {
   devnet: "wss://s.devnet.rippletest.net:51233/"
 } as const;
 
+// Define reusable type schemas to avoid deep instantiation
+const DIDPublicKeySchema = v.object({
+  id: v.string(),
+  type: v.string(),
+  controller: v.string(),
+  publicKeyHex: v.string()
+});
+
+const DIDServiceSchema = v.object({
+  id: v.string(),
+  type: v.string(),
+  serviceEndpoint: v.string()
+});
+
+const DIDDocumentSchema = v.object({
+  id: v.string(),
+  publicKey: v.array(DIDPublicKeySchema),
+  authentication: v.array(v.string()),
+  service: v.optional(v.array(DIDServiceSchema))
+});
+
+const NetworkSchema = v.optional(v.union(
+  v.literal("testnet"),
+  v.literal("mainnet"),
+  v.literal("devnet")
+));
+
 /**
  * Real XRPL DID implementation using XLS-40 specifications
  * Implements W3C Decentralized Identifiers (DIDs) on XRPL
@@ -21,27 +48,9 @@ const XRPL_NETWORKS = {
 export const createDID = action({
   args: {
     ownerPrivateKey: v.string(),
-    didDocument: v.object({
-      id: v.string(),
-      publicKey: v.array(v.object({
-        id: v.string(),
-        type: v.string(),
-        controller: v.string(),
-        publicKeyHex: v.string()
-      })),
-      authentication: v.array(v.string()),
-      service: v.optional(v.array(v.object({
-        id: v.string(),
-        type: v.string(),
-        serviceEndpoint: v.string()
-      })))
-    }),
+    didDocument: DIDDocumentSchema,
     uri: v.optional(v.string()),
-    network: v.optional(v.union(
-      v.literal("testnet"),
-      v.literal("mainnet"),
-      v.literal("devnet")
-    ))
+    network: NetworkSchema
   },
   handler: async (ctx, args) => {
     try {

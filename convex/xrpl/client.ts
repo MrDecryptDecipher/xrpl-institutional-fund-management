@@ -1,5 +1,8 @@
 "use node";
 
+// XRPL Institutional Fund Management Protocol - Client Module
+// Updated per September 2025 XRPL.org standards for institutional compliance
+
 import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { Client, Wallet, xrpToDrops, dropsToXrp, Transaction, TxResponse } from "xrpl";
@@ -23,6 +26,7 @@ export const initializeXRPLClient = action({
   handler: async (ctx, args) => {
     const network = (args.network || "testnet") as keyof typeof XRPL_NETWORKS;
     try {
+      // TODO: Add connection pooling for better performance
       const client = new Client(XRPL_NETWORKS[network]);
       
       // Connect using latest standards - async/await pattern as per September 2025 docs

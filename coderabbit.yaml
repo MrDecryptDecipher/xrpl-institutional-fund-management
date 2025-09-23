@@ -1,0 +1,90 @@
+# CodeRabbit Configuration for XRPL Institutional Fund Management Protocol
+# Following institutional-grade review standards
+
+reviews:
+  # High-level review settings
+  auto_review: true
+  drafts: true
+  
+  # Security-focused analysis for institutional finance
+  security:
+    - check_crypto_vulnerabilities
+    - validate_key_management
+    - scan_transaction_security
+    - audit_compliance_rules
+  
+  # XRPL-specific patterns to focus on
+  focus_areas:
+    - "XLS-33 MPT implementation patterns"
+    - "XLS-40 DID transaction security"
+    - "XLS-80 Permissioned domain compliance"
+    - "Multi-jurisdictional regulatory adherence"
+    - "Enterprise-grade error handling"
+    - "Institutional audit trail completeness"
+  
+  # Code quality standards
+  quality:
+    - typescript_strict_mode
+    - comprehensive_error_handling
+    - proper_async_patterns
+    - memory_leak_detection
+    - performance_optimization
+  
+  # Compliance requirements
+  compliance:
+    - MAS_singapore_regulations
+    - FINMA_switzerland_rules
+    - ESMA_eu_directives
+    - VARA_uae_crypto_laws
+    - SFC_hongkong_requirements
+    - SEC_us_securities_compliance
+
+# Path-specific instructions
+path_instructions:
+  "convex/xrpl/**":
+    - "Focus on XRPL.js integration best practices"
+    - "Validate XLS standard compliance"
+    - "Check for proper transaction validation"
+    - "Ensure secure key management"
+  
+  "convex/compliance/**":
+    - "Verify regulatory compliance implementation"
+    - "Check multi-jurisdictional coverage"
+    - "Validate KYC/AML procedures"
+  
+  "convex/funds/**":
+    - "Review institutional fund management logic"
+    - "Check investor protection measures"
+    - "Validate risk management controls"
+  
+  "src/components/**":
+    - "Ensure UI security best practices"
+    - "Check for sensitive data exposure"
+    - "Validate user input sanitization"
+
+# Language-specific rules
+language_rules:
+  typescript:
+    - prefer_strict_typing
+    - no_any_types_in_production
+    - comprehensive_error_boundaries
+    - proper_async_await_patterns
+  
+  javascript:
+    - use_modern_syntax
+    - avoid_callback_hell
+    - implement_proper_error_handling
+
+# Custom patterns to detect
+custom_patterns:
+  - name: "XRPL Transaction Pattern"
+    pattern: "autofill.*submitAndWait"
+    message: "Ensure proper XRPL transaction flow with validation"
+  
+  - name: "Private Key Exposure"
+    pattern: "privateKey|seed.*console\.log"
+    message: "CRITICAL: Never log private keys in production"
+  
+  - name: "Compliance Check"
+    pattern: "jurisdiction.*check"
+    message: "Verify compliance logic covers all required jurisdictions"

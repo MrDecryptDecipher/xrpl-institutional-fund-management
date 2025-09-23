@@ -47,7 +47,7 @@ export const createMPTToken = action({
       
       const issuerWallet = Wallet.fromSeed(args.issuerSeed);
       
-      // Create MPT Issuance Transaction per XLS-33 specification
+// FIXME: This is a potential security issue - need to validate MPT creation params
       const mptIssuanceCreate = {
         TransactionType: "MPTokenIssuanceCreate" as const,
         Account: issuerWallet.address,
