@@ -1,0 +1,46 @@
+graph TD
+    subgraph Origination["🏢 PHASE 1: Asset Origination"]
+        direction LR
+        A[Asset Identification] --> B[Due Diligence]
+        B --> C[Valuation]
+        C --> D[Legal Structure]
+    end
+
+    subgraph Token["🪙 PHASE 2: Tokenization"]
+        direction LR
+        E[Smart Contract Creation] --> F[Token Issuance]
+        F --> G[Compliance Setup]
+        G --> H[Investor Onboarding]
+    end
+
+    subgraph Dist["📤 PHASE 3: Distribution"]
+        direction LR
+        I[Primary Offering] --> J[Investor Allocation]
+        J --> K[Token Distribution]
+        K --> L[Settlement]
+    end
+
+    subgraph Mgmt["📊 PHASE 4: Ongoing Management"]
+        direction LR
+        M[NAV Calculation] --> N[Distributions]
+        N --> O[Reporting]
+        O --> P[Compliance Monitoring]
+    end
+
+    subgraph Market["💹 PHASE 5: Secondary Market"]
+        direction LR
+        Q[Trading Platform] --> R[Liquidity Provision]
+        R --> S[Price Discovery]
+        S --> T[Settlement]
+    end
+
+    Origination --> Token
+    Token --> Dist
+    Dist --> Mgmt
+    Mgmt --> Market
+
+    style Origination fill:#e1f5ff
+    style Token fill:#fff4e1
+    style Dist fill:#ffe1f5
+    style Mgmt fill:#e1ffe1
+    style Market fill:#f5e1ff

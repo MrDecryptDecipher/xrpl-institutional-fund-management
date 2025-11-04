@@ -1,49 +1,6 @@
 import { action, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import { api } from "../_generated/api";
-import { getAuthUserId } from "@convex-dev/auth/server";
-
-export const getComplianceOverview = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-    
-    // Return mock compliance data
-    return {
-      kycStatus: {
-        approved: 782,
-        pending: 43,
-        rejected: 22,
-        expired: 15
-      },
-      amlAlerts: {
-        high: 3,
-        medium: 12,
-        low: 27
-      },
-      regulatoryReporting: {
-        completed: 18,
-        pending: 2,
-        overdue: 0
-      },
-      jurisdictionCompliance: {
-        compliant: 12,
-        partiallyCompliant: 3,
-        nonCompliant: 0
-      },
-      riskAssessments: [
-        { category: "Market Risk", score: 72, status: "Acceptable" },
-        { category: "Credit Risk", score: 68, status: "Acceptable" },
-        { category: "Operational Risk", score: 85, status: "Low" },
-        { category: "Liquidity Risk", score: 77, status: "Acceptable" },
-        { category: "Regulatory Risk", score: 92, status: "Low" }
-      ]
-    };
-  }
-});
 
 // Institutional-Grade Compliance Framework
 // Supports MAS, FINMA, ESMA/MiCA, VARA/ADGM, SFC, SEC regulations

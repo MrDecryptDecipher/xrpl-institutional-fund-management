@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Xaman Component Pattern</title>
+</head>
+<body>
+    <h1>Test Xaman Component Pattern</h1>
+    <button id="testButton">Test Xaman Connection</button>
+    <button id="clearButton">Clear Results</button>
+    <div id="result" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+
+    <script type="module">
+        // Import Xumm SDK
+        import { Xumm } from 'https://unpkg.com/xumm@1.8.0/dist/xumm.min.mjs';
+
+        // Add result to the page
+        function addResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const formattedMessage = `[${timestamp}] ${message}\n`;
+            
+            if (isError) {
+                resultDiv.innerHTML += `<span style="color: red;">${formattedMessage}</span>`;
+            } else {
+                resultDiv.innerHTML += formattedMessage;
+            }
+            
+            console.log(message);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        // Initialize Xumm with API key
+        const apiKey = 'b53edeaf-0046-49a6-a100-4bb284be3682';
+        addResult(`Initializing Xumm with API key: ${apiKey.substring(0, 8)}...`);
+        
+        const xumm = new Xumm(apiKey);
+        addResult("Xumm initialized successfully!");
+
+        // Set up event listeners
+        xumm.on("ready", () => {
+            addResult("Xumm SDK ready event fired");
+        });
+
+        xumm.on("error", (error) => {
+            addResult(`Xumm SDK error: ${error.message || "Unknown error"}`, true);
+        });
+
+        xumm.on("success", () => {
+            addResult("Xumm authorization successful");
+        });
+
+        document.getElementById('testButton').addEventListener('click', async () => {
+            try {
+                addResult("Testing Xaman connection...");
+                
+                // Test ping
+                addResult("Testing ping...");
+                const pong = await xumm.ping();
+                addResult(`Ping successful: ${JSON.stringify(pong, null, 2)}`);
+                
+                // Test payload creation with timeout
+                addResult("Creating sign-in payload...");
+                
+                const payloadPromise = xumm.payload.create({
+                    TransactionType: 'SignIn',
+                });
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => {
+                        addResult("Payload creation timed out after 10 seconds", true);
+                        reject(new Error('Payload creation timeout after 10 seconds'));
+                    }, 10000)
+                );
+                
+                const payload = await Promise.race([payloadPromise, timeoutPromise]);
+                addResult(`Sign-in payload created successfully: ${JSON.stringify(payload, null, 2)}`);
+                
+                // Validate payload structure
+                if (!payload || !payload.uuid || !payload.refs || !payload.refs.qr_png) {
+                    addResult("Payload validation failed", true);
+                    throw new Error("Payload missing required properties");
+                }
+                
+                addResult("Payload validation passed!");
+                
+                // Cancel the payload since we're just testing
+                if (payload.uuid) {
+                    await xumm.payload.cancel(payload.uuid);
+                    addResult("Payload cancelled after testing");
+                }
+                
+                addResult("All tests completed successfully!");
+            } catch (error) {
+                addResult(`Error: ${error.message}`, true);
+                console.error("Error details:", error);
+            }
+        });
+        
+        document.getElementById('clearButton').addEventListener('click', () => {
+            document.getElementById('result').innerHTML = '';
+        });
+    </script>
+</body>
+</html>

@@ -10,18 +10,15 @@ export function SignInForm() {
 
   const handleAnonymousSignIn = () => {
     setSubmitting(true);
+    const formData = new FormData();
+    formData.set("flow", "signIn");
+    formData.set("anonymous", "true");
     
-    // Use the Anonymous provider directly without any parameters
-    void signIn("anonymous", {})
-      .then(() => {
-        // Success is handled by the App component
-        console.log("Anonymous sign-in successful");
-      })
-      .catch((error) => {
-        toast.error("Failed to sign in anonymously. Please try again.");
-        console.error("Anonymous sign-in error:", error);
-        setSubmitting(false);
-      });
+    void signIn("anonymous", {}).catch((error) => {
+      toast.error("Failed to sign in anonymously. Please try again.");
+      console.error("Anonymous sign-in error:", error);
+      setSubmitting(false);
+    });
   };
 
   return (

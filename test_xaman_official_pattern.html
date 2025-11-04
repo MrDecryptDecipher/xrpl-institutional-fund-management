@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Xaman Official Pattern</title>
+</head>
+<body>
+    <h1>Test Xaman Official Pattern</h1>
+    <button id="testButton">Test Xaman Connection</button>
+    <div id="result"></div>
+
+    <script type="module">
+        // Import Xumm SDK
+        import { Xumm } from 'https://unpkg.com/xumm@1.8.0/dist/xumm.min.mjs';
+
+        // Initialize Xumm with API key
+        const xumm = new Xumm('b53edeaf-0046-49a6-a100-4bb284be3682');
+
+        // Set up event listeners
+        xumm.on("ready", () => {
+            console.log("Xumm SDK ready");
+            document.getElementById('result').innerHTML += "<p>Xumm SDK ready</p>";
+        });
+
+        xumm.on("error", (error) => {
+            console.error("Xumm SDK error:", error);
+            document.getElementById('result').innerHTML += `<p>Xumm SDK error: ${error.message || "Unknown error"}</p>`;
+        });
+
+        xumm.on("success", () => {
+            console.log("Xumm authorization successful");
+            document.getElementById('result').innerHTML += "<p>Xumm authorization successful</p>";
+        });
+
+        document.getElementById('testButton').addEventListener('click', async () => {
+            try {
+                console.log("Testing Xaman connection...");
+                document.getElementById('result').innerHTML = "<p>Testing Xaman connection...</p>";
+                
+                // Wait for SDK to be ready
+                await new Promise((resolve) => {
+                    xumm.on("ready", resolve);
+                });
+                
+                console.log("Xumm SDK is ready");
+                document.getElementById('result').innerHTML += "<p>Xumm SDK is ready</p>";
+                
+                // Test creating a simple payload
+                const payload = await xumm.payload?.create({
+                    TransactionType: "SignIn"
+                });
+                
+                if (payload) {
+                    console.log("Payload created successfully");
+                    console.log("Payload UUID:", payload.uuid);
+                    console.log("QR Code URL:", payload.next?.always);
+                    
+                    document.getElementById('result').innerHTML += `
+                        <p>Payload created successfully</p>
+                        <p>Payload UUID: ${payload.uuid}</p>
+                        <p>QR Code URL: <a href="${payload.next?.always}" target="_blank">${payload.next?.always}</a></p>
+                    `;
+                    
+                    // Cancel the payload since we're just testing
+                    await xumm.payload?.cancel(payload.uuid);
+                    console.log("Payload cancelled");
+                    document.getElementById('result').innerHTML += "<p>Payload cancelled</p>";
+                } else {
+                    console.log("Failed to create payload");
+                    document.getElementById('result').innerHTML += "<p>Failed to create payload</p>";
+                }
+            } catch (error) {
+                console.error("Error testing Xaman connection:", error);
+                document.getElementById('result').innerHTML += `<p>Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

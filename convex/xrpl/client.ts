@@ -7,6 +7,12 @@ import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { Client, Wallet, xrpToDrops, dropsToXrp, Transaction, TxResponse } from "xrpl";
 import { XRPLNetworkError, XRPLAccountError, XRPLTransactionError } from "./types/errors";
+import WebSocket from "ws";
+
+// Polyfill WebSocket for Node.js environment
+if (typeof globalThis.WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = WebSocket;
+}
 
 // XRPL Network Configuration - Updated per September 2025 standards
 const XRPL_NETWORKS = {

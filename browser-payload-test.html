@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xaman Payload Test</title>
+    <script src="https://xumm.app/assets/cdn/xumm.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>Xaman Payload Creation Test</h1>
+        <button id="testButton">Test Payload Creation</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Get API key from environment or use placeholder
+        const apiKey = import.meta.env?.VITE_XUMM_API_KEY || 'b53edeaf-0046-49a6-a100-4bb284be3682';
+        console.log('Using API Key:', apiKey.substring(0, 8) + '...');
+
+        // Initialize Xumm SDK
+        const xumm = new Xumm(apiKey);
+        
+        // Add event listeners
+        xumm.on("ready", () => {
+            console.log("Xumm SDK is ready");
+            document.getElementById('result').innerHTML += '<p>SDK Ready</p>';
+        });
+        
+        xumm.on("error", (error) => {
+            console.error("Xumm SDK error:", error);
+            document.getElementById('result').innerHTML += `<p style="color: red;">SDK Error: ${error.message}</p>`;
+        });
+        
+        xumm.on("success", () => {
+            console.log("Xumm authorization successful");
+            document.getElementById('result').innerHTML += '<p>Authorization Successful</p>';
+        });
+
+        // Test payload creation
+        document.getElementById('testButton').addEventListener('click', async () => {
+            try {
+                document.getElementById('result').innerHTML = '<p>Creating payload...</p>';
+                
+                // Wait for SDK to be ready
+                await new Promise(resolve => {
+                    if (xumm.runtime.ready) {
+                        resolve();
+                    } else {
+                        xumm.on("ready", resolve);
+                    }
+                });
+                
+                console.log("SDK is ready, creating payload...");
+                
+                // Create payload with timeout
+                const payloadPromise = xumm.payload.create({
+                    TransactionType: 'SignIn'
+                });
+                
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Payload creation timeout after 10 seconds')), 10000)
+                );
+                
+                const payload = await Promise.race([payloadPromise, timeoutPromise]);
+                
+                console.log("Payload created:", payload);
+                document.getElementById('result').innerHTML += `<p style="color: green;">Payload created successfully!</p>`;
+                document.getElementById('result').innerHTML += `<pre>${JSON.stringify(payload, null, 2)}</pre>`;
+                
+            } catch (error) {
+                console.error("Error creating payload:", error);
+                document.getElementById('result').innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+                document.getElementById('result').innerHTML += `<pre>${error.stack}</pre>`;
+            }
+        });
+    </script>
+</body>
+</html>

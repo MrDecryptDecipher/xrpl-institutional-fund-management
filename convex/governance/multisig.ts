@@ -2,30 +2,60 @@
 
 import { action } from "../_generated/server";
 import { v } from "convex/values";
-import { Client, Wallet } from "xrpl";
-import CryptoJS from "crypto-js";
+import { Client, Wallet, SignerListSet, AccountSet, multisign } from "xrpl";
+import * as CryptoJS from "crypto-js";
 
 // Advanced XRPL Network Configuration for Institutional Multi-Signature Governance
 const XRPL_NETWORKS = {
   testnet: "wss://s.altnet.rippletest.net:51233",
   mainnet: "wss://xrplcluster.com", 
   devnet: "wss://s.devnet.rippletest.net:51233"
-};
+} as const;
 
-type NetworkType = keyof typeof XRPL_NETWORKS;
+type XRPLNetwork = keyof typeof XRPL_NETWORKS;
+
+// Helper function to get network URL with proper typing
+function getNetworkUrl(network: XRPLNetwork): string {
+  return XRPL_NETWORKS[network];
+}
+
+// Define proper types for our arguments to avoid deep type instantiation issues
+interface CreateMultiSigAccountArgs {
+  signerSeeds: string[];
+  quorum: number;
+  accountPurpose: string;
+  network: string;
+}
+
+interface ExecuteMultiSigTransactionArgs {
+  multiSigAccount: string;
+  signerSeeds: string[];
+  transactionType: string;
+  transactionDetails: Record<string, any>;
+  approvalMetadata: Record<string, any>;
+  network: string;
+}
+
+interface PerformMultiSigRiskAssessmentArgs {
+  multiSigConfig: Record<string, any>;
+  proposedTransaction: Record<string, any>;
+  riskOfficerSeed: string;
+  network: string;
+}
 
 // Advanced Institutional Multi-Signature Account Creation with Enhanced Security Framework
 export const createMultiSigAccount = action({
   args: {
-    signerSeeds: v.any(),
+    signerSeeds: v.array(v.string()),
     quorum: v.number(),
     accountPurpose: v.string(),
     network: v.string()
   },
-  handler: async (ctx: any, args: any) => {
+  returns: v.any(), // Using v.any() to avoid deep type instantiation while maintaining XRPL compliance
+  handler: async (ctx, args: CreateMultiSigAccountArgs) => {
     try {
-      const network: NetworkType = (args.network as NetworkType) || "testnet";
-      const networkUrl = XRPL_NETWORKS[network];
+      const network = (args.network || "testnet") as XRPLNetwork;
+      const networkUrl = getNetworkUrl(network);
       const xrplClient = new Client(networkUrl);
       await xrplClient.connect();
       
@@ -57,14 +87,14 @@ export const createMultiSigAccount = action({
       });
       
       // Set up advanced multi-signature governance on the master account
-      const signerListSetTx = {
+      const signerListSetTx: SignerListSet = {
         TransactionType: "SignerListSet",
         Account: masterWallet.address,
         SignerQuorum: args.quorum,
         SignerEntries: signerEntries
       };
       
-      const prepared = await xrplClient.autofill(signerListSetTx as any);
+      const prepared = await xrplClient.autofill(signerListSetTx);
       const signed = masterWallet.sign(prepared);
       const result = await xrplClient.submitAndWait(signed.tx_blob);
       
@@ -73,13 +103,13 @@ export const createMultiSigAccount = action({
       }
       
       // Disable master key for enhanced institutional security
-      const accountSetTx = {
+      const accountSetTx: AccountSet = {
         TransactionType: "AccountSet",
         Account: masterWallet.address,
         SetFlag: 4 // asfDisableMaster - critical for institutional security
       };
       
-      const setTxPrepared = await xrplClient.autofill(accountSetTx as any);
+      const setTxPrepared = await xrplClient.autofill(accountSetTx);
       const setTxSigned = masterWallet.sign(setTxPrepared);
       const setTxResult = await xrplClient.submitAndWait(setTxSigned.tx_blob);
       
@@ -102,19 +132,22 @@ export const createMultiSigAccount = action({
         };
       });
       
+      // Return comprehensive institutional multi-signature account details
       return {
         success: true,
         multiSigAccount: masterWallet.address,
         accountPurpose: args.accountPurpose,
         signerCount: args.signerSeeds.length,
         quorum: args.quorum,
-        keyIdentifiers: keyIdentifiers,
         setupTxHash: result.result.hash,
         disableMasterTxHash: setTxResult.result.hash,
         network: network,
-        institutionalSecurityLevel: "enterprise-grade",
-        governanceModel: "democratic-institutional",
-        complianceStatus: "sox-ready"
+        keyIdentifiers: keyIdentifiers,
+        securityConfiguration: {
+          masterKeyDisabled: true,
+          multiSignatureEnabled: true,
+          institutionalGradeSecurity: true
+        }
       };
       
     } catch (error) {
@@ -131,21 +164,22 @@ export const createMultiSigAccount = action({
 export const executeMultiSigTransaction = action({
   args: {
     multiSigAccount: v.string(),
-    signerSeeds: v.any(),
+    signerSeeds: v.array(v.string()),
     transactionType: v.string(),
     transactionDetails: v.any(),
     approvalMetadata: v.any(),
     network: v.string()
   },
-  handler: async (ctx: any, args: any) => {
+  returns: v.any(), // Using v.any() to avoid deep type instantiation while maintaining XRPL compliance
+  handler: async (ctx, args: ExecuteMultiSigTransactionArgs) => {
     try {
-      const network: NetworkType = (args.network as NetworkType) || "testnet";
-      const networkUrl = XRPL_NETWORKS[network];
+      const network = (args.network || "testnet") as XRPLNetwork;
+      const networkUrl = getNetworkUrl(network);
       const xrplClient = new Client(networkUrl);
       await xrplClient.connect();
       
       // Advanced institutional transaction construction with comprehensive metadata
-      const baseTransaction = {
+      const baseTransaction: any = {
         TransactionType: args.transactionType,
         Account: args.multiSigAccount,
         ...args.transactionDetails,
@@ -169,26 +203,29 @@ export const executeMultiSigTransaction = action({
       };
       
       // Prepare transaction for advanced multi-signature execution
-      const prepared = await xrplClient.autofill(baseTransaction as any);
+      const prepared = await xrplClient.autofill(baseTransaction);
+      
+      // Clear the SigningPubKey for multi-signing
+      prepared.SigningPubKey = "";
       
       // Advanced institutional multi-signature collection process
-      const signedTransaction = args.signerSeeds.reduce((tx: any, seed: string, index: number) => {
+      const signedTransactions: any[] = [];
+      
+      // Get individual signatures from each signer
+      for (let i = 0; i < args.signerSeeds.length; i++) {
+        const seed = args.signerSeeds[i];
         const signerWallet = Wallet.fromSeed(seed);
-        const signedTx = signerWallet.sign(prepared, true); // true for multi-signing
         
-        if (index === 0) {
-          return signedTx;
-        } else {
-          // Combine signatures for institutional consensus
-          return {
-            ...tx,
-            Signers: [...(tx.Signers || []), ...signedTx.Signers]
-          };
-        }
-      }, {});
+        // Sign with multi-sign flag (true)
+        const signedTx = signerWallet.sign(prepared, true);
+        signedTransactions.push(signedTx);
+      }
+      
+      // Combine all signatures using the multisign function
+      const combinedTransaction = multisign(signedTransactions);
       
       // Execute the advanced institutional multi-signature transaction
-      const result = await xrplClient.submitAndWait(signedTransaction.tx_blob || signedTransaction);
+      const result = await xrplClient.submitAndWait(combinedTransaction);
       
       await xrplClient.disconnect();
       
@@ -196,21 +233,28 @@ export const executeMultiSigTransaction = action({
         throw new Error("Advanced institutional multi-signature transaction execution failed");
       }
       
+      // Return comprehensive institutional transaction execution details
       return {
         success: true,
         multiSigAccount: args.multiSigAccount,
         txHash: result.result.hash,
         ledgerIndex: result.result.ledger_index,
         signerCount: args.signerSeeds.length,
-        approvalMetadata: args.approvalMetadata,
         network: network,
-        institutionalCompliance: {
-          governanceLevel: "board-approved",
-          auditStatus: "transaction-recorded",
-          riskManagement: "enterprise-controlled",
-          regulatoryCompliance: "sox-mifid-compliant"
+        executionTimestamp: new Date().toISOString(),
+        transactionDetails: {
+          type: args.transactionType,
+          ...args.transactionDetails
         },
-        executionTimestamp: new Date().toISOString()
+        approvalMetadata: args.approvalMetadata,
+        compliance: {
+          governanceFramework: 'xrpl-institutional-v2',
+          auditTrail: {
+            transactionHash: result.result.hash,
+            ledgerIndex: result.result.ledger_index,
+            timestamp: new Date().toISOString()
+          }
+        }
       };
       
     } catch (error) {
@@ -231,7 +275,8 @@ export const performMultiSigRiskAssessment = action({
     riskOfficerSeed: v.string(),
     network: v.string()
   },
-  handler: async (ctx: any, args: any) => {
+  returns: v.any(), // Using v.any() to avoid deep type instantiation while maintaining XRPL compliance
+  handler: async (ctx, args: PerformMultiSigRiskAssessmentArgs) => {
     try {
       // Advanced institutional risk assessment for multi-signature governance
       const riskMetrics = {
@@ -249,23 +294,36 @@ export const performMultiSigRiskAssessment = action({
       // Advanced institutional governance decision matrix
       const governanceDecision = determineGovernanceRequirements(overallRiskScore, args.proposedTransaction);
       
+      // Generate risk recommendations
+      const riskRecommendations = generateRiskRecommendations(riskMetrics);
+      
+      // Perform compliance validation
+      const complianceValidation = performComplianceValidation(args.proposedTransaction);
+      
+      // Determine approval requirements
+      const approvalRequirements = determineApprovalRequirements(overallRiskScore);
+      
+      // Generate institutional controls
+      const institutionalControls = generateInstitutionalControls(riskMetrics);
+      
+      // Determine reporting requirements
+      const reportingRequirements = determineReportingRequirements(args.proposedTransaction);
+      
+      // Return comprehensive institutional risk assessment
       return {
         success: true,
-        riskAssessment: {
-          overallScore: overallRiskScore,
-          riskLevel: categorizeRiskLevel(overallRiskScore),
-          detailedMetrics: riskMetrics,
-          recommendations: generateRiskRecommendations(riskMetrics),
-          complianceChecks: performComplianceValidation(args.proposedTransaction),
-          approvalRequirements: determineApprovalRequirements(overallRiskScore),
-          governanceDecision: governanceDecision,
-          institutionalControls: generateInstitutionalControls(riskMetrics),
-          regulatoryReporting: determineReportingRequirements(args.proposedTransaction)
-        },
+        overallScore: overallRiskScore,
+        riskLevel: categorizeRiskLevel(overallRiskScore),
         timestamp: new Date().toISOString(),
         assessedBy: "institutional-risk-engine-v2",
         riskOfficer: args.riskOfficerSeed ? "authenticated" : "system-automated",
-        complianceFramework: "basel-iii-mifid-sox"
+        riskMetrics: riskMetrics,
+        governanceDecision: governanceDecision,
+        riskRecommendations: riskRecommendations,
+        complianceValidation: complianceValidation,
+        approvalRequirements: approvalRequirements,
+        institutionalControls: institutionalControls,
+        reportingRequirements: reportingRequirements
       };
       
     } catch (error) {

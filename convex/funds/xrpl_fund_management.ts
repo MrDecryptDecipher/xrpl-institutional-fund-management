@@ -111,16 +111,16 @@ export const createAdvancedInstitutionalFund = action({
       const masterFundToken = {
         TransactionType: "MPTokenIssuanceCreate",
         Account: managerWallet.address,
-        MPTokenMetadata: {
-          MPTName: Buffer.from(fundConfig.fundDetails.name, 'utf8').toString('hex').toUpperCase(),
-          MPTSymbol: Buffer.from(fundConfig.fundDetails.symbol, 'utf8').toString('hex').toUpperCase(),
-          MPTDescription: Buffer.from(`Institutional ${fundConfig.fundDetails.fundType} Fund`, 'utf8').toString('hex').toUpperCase(),
-          MPTDecimals: 18,
-          MPTURI: Buffer.from(`https://fund.xrpl.org/${fundId.toLowerCase()}`, 'utf8').toString('hex').toUpperCase()
-        },
-        MPTokenIssuanceMaxAmount: args.authorizedShares,
-        MPTokenIssuanceTransferFee: 0, // Managed through smart logic
-        Flags: 0x10 | 0x20 // Transferable + Requires Destination Tag for compliance
+        AssetScale: 18,
+        MaximumAmount: args.authorizedShares,
+        TransferFee: 0, // Managed through smart logic
+        MPTokenMetadata: Buffer.from(JSON.stringify({
+          name: fundConfig.fundDetails.name,
+          symbol: fundConfig.fundDetails.symbol,
+          description: `Institutional ${fundConfig.fundDetails.fundType} Fund`,
+          uri: `https://fund.xrpl.org/${fundId.toLowerCase()}`
+        })).toString('hex').toUpperCase(),
+        Flags: 0x00000020 | 0x00000040 // Transferable + Can Clawback
       };
       
       const masterPrepared = await xrplClient.autofill(masterFundToken as any);
@@ -140,16 +140,16 @@ export const createAdvancedInstitutionalFund = action({
         const classToken = {
           TransactionType: "MPTokenIssuanceCreate", 
           Account: managerWallet.address,
-          MPTokenMetadata: {
-            MPTName: Buffer.from(`${fundConfig.fundDetails.name} ${className}`, 'utf8').toString('hex').toUpperCase(),
-            MPTSymbol: Buffer.from(`${fundConfig.fundDetails.symbol}_${className}`, 'utf8').toString('hex').toUpperCase(),
-            MPTDescription: Buffer.from(`${className} shares of ${fundConfig.fundDetails.name}`, 'utf8').toString('hex').toUpperCase(),
-            MPTDecimals: 18,
-            MPTURI: Buffer.from(`https://fund.xrpl.org/${fundId.toLowerCase()}/${className.toLowerCase()}`, 'utf8').toString('hex').toUpperCase()
-          },
-          MPTokenIssuanceMaxAmount: Math.floor(parseInt(args.authorizedShares) / Object.keys(fundConfig.shareClasses).length).toString(),
-          MPTokenIssuanceTransferFee: Math.floor(classConfig.managementFee * 100), // Basis points
-          Flags: 0x10 | 0x20 | 0x40 // Transferable + Requires Destination Tag + Requires Authorization
+          AssetScale: 18,
+          MaximumAmount: Math.floor(parseInt(args.authorizedShares) / Object.keys(fundConfig.shareClasses).length).toString(),
+          TransferFee: Math.floor(classConfig.managementFee * 100), // Basis points
+          MPTokenMetadata: Buffer.from(JSON.stringify({
+            name: `${fundConfig.fundDetails.name} ${className}`,
+            symbol: `${fundConfig.fundDetails.symbol}_${className}`,
+            description: `${className} shares of ${fundConfig.fundDetails.name}`,
+            uri: `https://fund.xrpl.org/${fundId.toLowerCase()}/${className.toLowerCase()}`
+          })).toString('hex').toUpperCase(),
+          Flags: 0x00000004 | 0x00000020 | 0x00000040 // Require Auth + Transferable + Can Clawback
         };
         
         const classPrepared = await xrplClient.autofill(classToken as any);
@@ -163,7 +163,29 @@ export const createAdvancedInstitutionalFund = action({
         shareClassTokens[className] = `${classResult.result.hash?.substring(0, 16).toUpperCase()}`;
       }
       
-      // Step 3: Create Comprehensive Fund Registration Transaction
+      // Step 3: Create Permissioned Domain for the Fund
+      const domainCreation = {
+        TransactionType: "PermissionedDomainSet",
+        Account: managerWallet.address,
+        AcceptedCredentials: [{
+          Credential: {
+            Issuer: managerWallet.address,
+            CredentialType: Buffer.from('FundInvestorCredential', 'utf8').toString('hex').toUpperCase()
+          }
+        }]
+      };
+      
+      const domainPrepared = await xrplClient.autofill(domainCreation as any);
+      const domainSigned = managerWallet.sign(domainPrepared);
+      const domainResult = await xrplClient.submitAndWait(domainSigned.tx_blob);
+      
+      if (!domainResult.result.validated) {
+        throw new Error("Permissioned domain creation failed");
+      }
+      
+      const domainId = `${domainResult.result.hash?.substring(0, 16).toUpperCase()}`;
+      
+      // Step 4: Create Comprehensive Fund Registration Transaction
       const fundRegistration = {
         TransactionType: "Payment",
         Account: managerWallet.address,
@@ -177,6 +199,7 @@ export const createAdvancedInstitutionalFund = action({
               fundId: fundId,
               masterMptId: masterMptId,
               shareClassTokens: shareClassTokens,
+              domainId: domainId,
               fundConfig: fundConfig,
               initialCapital: args.initialCapital,
               authorizedShares: args.authorizedShares,
@@ -217,6 +240,7 @@ export const createAdvancedInstitutionalFund = action({
         fundId: fundId,
         masterMptId: masterMptId,
         shareClassTokens: shareClassTokens,
+        domainId: domainId,
         manager: managerWallet.address,
         fundName: fundConfig.fundDetails.name,
         fundType: fundConfig.fundDetails.fundType,
@@ -225,6 +249,7 @@ export const createAdvancedInstitutionalFund = action({
         authorizedShares: args.authorizedShares,
         initialCapital: args.initialCapital,
         masterTokenTxHash: masterResult.result.hash,
+        domainTxHash: domainResult.result.hash,
         registrationTxHash: regResult.result.hash,
         network: networkType,
         shareClasses: Object.keys(fundConfig.shareClasses),

@@ -1,0 +1,660 @@
+{
+  "meta": {
+    "project": "XRPL Institutional Tokenized Fund Management Protocol",
+    "date": "2025-10-04",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "A comprehensive, institutional-grade fund management protocol built exclusively on the XRP Ledger (XRPL) enabling multi-asset tokenization, compliance across jurisdictions, fund operations, and advanced DeFi capabilities leveraging XRPL latest blockchain primitives.",
+  "core_goals": [
+    "Enable full tokenization of diverse asset classes using XRPL Multi-Purpose Tokens (MPT).",
+    "Implement layered compliance, identity, and access controls for institutional investors across multiple jurisdictions.",
+    "Facilitate decentralized, upgradeable fund operations including issuance, transfers, subscriptions, redemptions, asset management, lending, trading, governance, and audits.",
+    "Achieve no vendor lock-in with full ledger-side validation adhering strictly to XRPL specifications and amendments.",
+    "Provide secure and auditable transaction and compliance workflows with immutable on-chain logging linked to real-time reporting."
+  ],
+  "key_features": [
+    "Multi-Purpose Token (MPT) standard implementation with configurable supply, transfer fees, authorized holders, and clawbacks.",
+    "Permissioned Domain (XLS-80) integration enforcing KYC/AML and institutional gating with credential-gated membership and privacy-preserving verifications.",
+    "Decentralized Identity (DID, XLS-40) anchoring for user identity linked to credentials ensuring immutable and portable identity.",
+    "Full fund lifecycle management: creation with token issuance, subscriptions, redemptions, transfers, and compliance-checked transactions.",
+    "Native XRPL DEX trading with permissioned AMM liquidity pools supporting basket and share tokens.",
+    "Integration of native lending protocols (XLS-65/66) for credentialed pooled lending operations.",
+    "Comprehensive compliance and risk management supporting multiple international regulatory frameworks (MAS, FINMA, ESMA, VARA, SEC, etc.).",
+    "Governance via multi-signature control with on-chain upgradeable contracts and staged rollout capabilities.",
+    "Security protocols including HSM/MPC key management, formal verification for Hooks, and privacy-focused data handling.",
+    "Cross-chain bridge functionality for asset transfer to EVM chains and external oracles for reliable price feeds.",
+    "Developer SDKs and APIs exposing full protocol capabilities including WebSocket, REST, and CLI interfaces.",
+    "Rich user interfaces for institutional investors and managers covering credential checks, transaction workflows, portfolio analytics, and governance dashboards."
+  ],
+  "user_flow_summary": [
+    "Investor registers and completes KYC/AML verification, obtaining credentials linked to a decentralized identity (DID).",
+    "Institutional fund managers create and configure funds deploying smart contracts with issuance rules and token metadata.",
+    "Investors subscribe or redeem fund shares with all transactions checked against permissioned domain rules and credential validations.",
+    "Authorized investors trade MPT tokens on XRPL DEX and permissioned AMM pools with real-time compliance enforcement.",
+    "Lending pools operate with borrowers and depositors credential-gated, tracking repayments, defaults, and interest on-chain.",
+    "Compliance agents run real-time compliance checks, revoking credentials or clawing back tokens on breach detection.",
+    "Governance participants submit, discuss, and vote on fund proposals via multi-sig governance contracts.",
+    "Audit logs and compliance reports are anchored on-chain with off-chain linkage and real-time dashboards for transparency."
+  ],
+  "validation_criteria": [
+    "All XRPL primitives implemented must be fully compliant with latest amendments: XLS-33, XLS-80, XLS-40, XLS-65/66, XLS-70, XLS-30.",
+    "Credential issuance, verification, revocation, and DID anchoring must produce immutable ledger evidence for audit.",
+    "Permissioned domain gating must restrict actions strictly according to credential and jurisdictional rules without bypass.",
+    "All transactions including mint, burn, transfer, trade, lend, and borrow require successful compliance checks prior to execution.",
+    "Governance contract actions require multisig confirmations with logs of all upgrades and parameter changes.",
+    "Hooks are subjected to formal verification and must pass security audits pre-deployment.",
+    "Automated test suites and manual tests cover all fund workflows, compliance logic, credential handling, and edge cases.",
+    "No on-chain storage of PII, identity data must be privacy-preserving and encrypted as per protocol design.",
+    "Real-time analytics and reporting dashboards reflect all on-chain and off-chain aggregated data for funds, investors, and compliance status.",
+    "Cross-chain bridge and oracle integrations must maintain data integrity and secure transaction flows adhering to protocol mandates."
+  ],
+  "code_summary": {
+    "tech_stack": [
+      "TypeScript",
+      "React",
+      "Vite",
+      "Convex",
+      "XRPL",
+      "Xaman",
+      "Node.js",
+      "Express",
+      "TailwindCSS",
+      "WebSocket",
+      "TOML",
+      "Crypto-js"
+    ],
+    "features": [
+      {
+        "name": "Institutional Fund Management",
+        "description": "Comprehensive institutional fund management system with XRPL integration, compliance, and multi-jurisdictional support",
+        "files": [
+          "convex/funds/management.ts",
+          "convex/funds/institutional_management.ts",
+          "convex/funds/advanced_management.ts",
+          "convex/funds/xrpl_fund_management.ts",
+          "src/components/InstitutionalDashboard.tsx",
+          "src/components/FundDashboard.tsx",
+          "src/components/CreateFundModal.tsx",
+          "src/components/InstitutionalFundCreator.tsx"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Institutional Fund Management API",
+            "version": "1.0.0",
+            "description": "API for managing institutional funds with XRPL integration"
+          },
+          "paths": {
+            "/funds": {
+              "get": {
+                "summary": "List all funds",
+                "responses": {
+                  "200": {
+                    "description": "List of funds",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Fund"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Create a new fund",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/CreateFundRequest"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Fund created successfully"
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "Fund": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "fundType": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "aum": {
+                    "type": "number"
+                  },
+                  "nav": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "XRPL Integration",
+        "description": "XRPL blockchain integration for transactions, MPT tokens, and ledger operations",
+        "files": [
+          "src/lib/xrpl-toml.ts",
+          "src/lib/send-xrp.ts",
+          "src/lib/transaction-manager.ts",
+          "src/lib/websocket-tool.ts",
+          "src/lib/ledger-entries.ts",
+          "src/lib/ledger-history.ts",
+          "src/lib/checks.ts",
+          "src/lib/payment-channels.ts",
+          "src/lib/payment-monitor.ts",
+          "convex/xrpl/",
+          "src/components/XRPLStatus.tsx",
+          "src/components/EnhancedXRPLStatus.tsx"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "XRPL Integration API",
+            "version": "1.0.0",
+            "description": "API for XRPL blockchain operations"
+          },
+          "paths": {
+            "/xrpl/transaction": {
+              "post": {
+                "summary": "Submit XRPL transaction",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/XRPLTransaction"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/xrpl/balance": {
+              "get": {
+                "summary": "Get account balance",
+                "parameters": [
+                  {
+                    "name": "account",
+                    "in": "query",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Xaman Wallet Integration",
+        "description": "Xaman wallet connection and transaction signing",
+        "files": [
+          "src/components/XamanWalletConnect.tsx",
+          "src/components/XamanWalletConnect.debug.tsx",
+          "src/xaman-payload-server.ts",
+          "src/lib/xrpl-toml.ts",
+          "test_xaman_connection.ts",
+          "test_xaman_sdk.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Xaman Wallet API",
+            "version": "1.0.0",
+            "description": "API for Xaman wallet integration"
+          },
+          "paths": {
+            "/xaman/payload": {
+              "post": {
+                "summary": "Create Xaman payload",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/XamanPayload"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/xaman/verify": {
+              "post": {
+                "summary": "Verify Xaman signature",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/XamanVerification"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Investor Management",
+        "description": "Investor registration, KYC/AML, and portfolio management",
+        "files": [
+          "convex/investors/",
+          "src/components/InvestorDashboard.tsx",
+          "src/components/InvestorRegistrationModal.tsx",
+          "src/components/FundInvestmentModal.tsx",
+          "convex/compliance/"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Investor Management API",
+            "version": "1.0.0",
+            "description": "API for investor management and compliance"
+          },
+          "paths": {
+            "/investors": {
+              "get": {
+                "summary": "List investors",
+                "responses": {
+                  "200": {
+                    "description": "List of investors"
+                  }
+                }
+              },
+              "post": {
+                "summary": "Register new investor",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/InvestorRegistration"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Compliance and Risk Management",
+        "description": "Comprehensive compliance checking, risk assessment, and regulatory reporting",
+        "files": [
+          "convex/compliance/",
+          "convex/risk/",
+          "convex/audit/",
+          "src/components/CompliancePermissioning.tsx",
+          "src/components/InstitutionalReporting.tsx",
+          "src/lib/domain-verifier.ts",
+          "src/lib/permissioned-domain.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Compliance API",
+            "version": "1.0.0",
+            "description": "API for compliance and risk management"
+          },
+          "paths": {
+            "/compliance/check": {
+              "post": {
+                "summary": "Run compliance check",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/ComplianceCheck"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Portfolio Management",
+        "description": "Portfolio tracking, rebalancing, and asset management",
+        "files": [
+          "convex/funds/portfolio_management.ts",
+          "convex/funds/portfolio_management_minimal.ts",
+          "src/components/EnhancedMarketOverview.tsx",
+          "src/components/MarketOverview.tsx",
+          "src/lib/transaction-manager-refactored-complete.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Portfolio Management API",
+            "version": "1.0.0",
+            "description": "API for portfolio management operations"
+          },
+          "paths": {
+            "/portfolio/rebalance": {
+              "post": {
+                "summary": "Rebalance portfolio",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/RebalanceRequest"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Settlement Processing",
+        "description": "Subscription and redemption settlement processing",
+        "files": [
+          "convex/funds/settlement.ts",
+          "convex/funds/subscription_redemption.ts",
+          "convex/funds/settlement_types.ts",
+          "convex/funds/subscription_redemption_types.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Settlement API",
+            "version": "1.0.0",
+            "description": "API for settlement processing"
+          },
+          "paths": {
+            "/settlement/process": {
+              "post": {
+                "summary": "Process settlement",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/SettlementRequest"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Authentication and Authorization",
+        "description": "User authentication and role-based access control",
+        "files": [
+          "convex/auth.ts",
+          "convex/auth.config.ts",
+          "src/components/SignInForm.tsx",
+          "src/components/SignOutButton.tsx",
+          "convex/auth/"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Authentication API",
+            "version": "1.0.0",
+            "description": "API for authentication and authorization"
+          },
+          "paths": {
+            "/auth/signin": {
+              "post": {
+                "summary": "Sign in user",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/SignInRequest"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Transaction Management",
+        "description": "Transaction execution, monitoring, and error handling",
+        "files": [
+          "src/lib/transaction-manager.ts",
+          "src/lib/transaction-manager-refactored-complete.ts",
+          "src/lib/transaction-types.ts",
+          "src/lib/transaction-error-handler.ts",
+          "src/components/TransactionExecutor.tsx",
+          "convex/transactions/"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Transaction Management API",
+            "version": "1.0.0",
+            "description": "API for transaction management"
+          },
+          "paths": {
+            "/transactions": {
+              "get": {
+                "summary": "List transactions",
+                "responses": {
+                  "200": {
+                    "description": "List of transactions"
+                  }
+                }
+              },
+              "post": {
+                "summary": "Execute transaction",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/TransactionRequest"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Governance",
+        "description": "Fund governance, voting, and decision making",
+        "files": [
+          "convex/governance/",
+          "src/components/GovernanceDashboard.tsx",
+          "src/components/CreatorAttribution.tsx"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Governance API",
+            "version": "1.0.0",
+            "description": "API for fund governance"
+          },
+          "paths": {
+            "/governance/proposals": {
+              "get": {
+                "summary": "List governance proposals",
+                "responses": {
+                  "200": {
+                    "description": "List of proposals"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Analytics and Reporting",
+        "description": "Analytics dashboard, reporting, and data visualization",
+        "files": [
+          "convex/analytics/",
+          "src/components/DashboardTest.tsx",
+          "src/components/InstitutionalReporting.tsx"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Analytics API",
+            "version": "1.0.0",
+            "description": "API for analytics and reporting"
+          },
+          "paths": {
+            "/analytics/fund-performance": {
+              "get": {
+                "summary": "Get fund performance analytics",
+                "parameters": [
+                  {
+                    "name": "fundId",
+                    "in": "query",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Security and Audit",
+        "description": "Security monitoring, audit logs, and compliance tracking",
+        "files": [
+          "convex/security/",
+          "convex/audit/",
+          "src/lib/credential.ts",
+          "src/lib/did.ts",
+          "src/components/XRPLStandardsBadge.tsx"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Security API",
+            "version": "1.0.0",
+            "description": "API for security and audit operations"
+          },
+          "paths": {
+            "/security/audit-logs": {
+              "get": {
+                "summary": "Get audit logs",
+                "parameters": [
+                  {
+                    "name": "entityType",
+                    "in": "query",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Bridge and Cross-Chain",
+        "description": "Bridge operations and cross-chain asset management",
+        "files": [
+          "convex/bridges/",
+          "src/lib/bridge.ts",
+          "src/lib/parallel-networks.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Bridge API",
+            "version": "1.0.0",
+            "description": "API for bridge and cross-chain operations"
+          },
+          "paths": {
+            "/bridge/transfer": {
+              "post": {
+                "summary": "Transfer assets across chains",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/BridgeTransferRequest"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "Oracle Integration",
+        "description": "Oracle price feeds and external data integration",
+        "files": [
+          "convex/oracles/",
+          "src/lib/oracle.ts",
+          "src/lib/xrp-faucets.ts"
+        ],
+        "api_doc": {
+          "openapi": "3.0.0",
+          "info": {
+            "title": "Oracle API",
+            "version": "1.0.0",
+            "description": "API for oracle operations"
+          },
+          "paths": {
+            "/oracle/price": {
+              "get": {
+                "summary": "Get asset price from oracle",
+                "parameters": [
+                  {
+                    "name": "symbol",
+                    "in": "query",
+                    "required": true,
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

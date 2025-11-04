@@ -2,76 +2,6 @@ import { query, mutation } from "../_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
-export const getRiskManagementData = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-    
-    // Return mock risk management data
-    return {
-      portfolioRisk: {
-        var95: 3.2,
-        var99: 5.1,
-        expectedShortfall: 6.8,
-        stressTestResults: [
-          { scenario: "Market Crash", impact: -12.4 },
-          { scenario: "Interest Rate Spike", impact: -8.7 },
-          { scenario: "Liquidity Crisis", impact: -15.2 },
-          { scenario: "Regulatory Change", impact: -4.3 },
-          { scenario: "Geopolitical Event", impact: -7.9 }
-        ]
-      },
-      riskExposures: {
-        marketRisk: 68,
-        creditRisk: 42,
-        liquidityRisk: 35,
-        operationalRisk: 28,
-        counterpartyRisk: 45
-      },
-      riskAlerts: [
-        { severity: "high", description: "Concentration risk in technology sector exceeds threshold", timestamp: "2024-01-15T08:23:45Z" },
-        { severity: "medium", description: "Liquidity ratio below target for Fund XYZ", timestamp: "2024-01-14T16:42:12Z" },
-        { severity: "medium", description: "Volatility increasing in emerging markets exposure", timestamp: "2024-01-13T11:05:33Z" },
-        { severity: "low", description: "Minor deviation in duration target for fixed income portfolio", timestamp: "2024-01-12T09:18:27Z" }
-      ]
-    };
-  }
-});
-
-export const getInstitutionalReports = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-    
-    // Return mock institutional reports data
-    return {
-      recentReports: [
-        { id: "rep1", title: "Q4 2023 Performance Summary", type: "quarterly", date: "2024-01-15T10:00:00Z", status: "published" },
-        { id: "rep2", title: "Annual Risk Assessment 2023", type: "annual", date: "2024-01-10T14:30:00Z", status: "published" },
-        { id: "rep3", title: "ESG Impact Report", type: "special", date: "2023-12-20T09:15:00Z", status: "published" },
-        { id: "rep4", title: "Regulatory Compliance Audit", type: "compliance", date: "2023-12-15T11:45:00Z", status: "published" },
-        { id: "rep5", title: "Q1 2024 Outlook", type: "quarterly", date: "2024-01-20T08:00:00Z", status: "draft" }
-      ],
-      reportMetrics: {
-        published: 42,
-        inProgress: 8,
-        scheduled: 12
-      },
-      regulatoryFilings: {
-        completed: 18,
-        upcoming: 3,
-        overdue: 0
-      }
-    };
-  }
-});
-
 export const getAdvancedFundAnalytics = query({
   args: {
     fundId: v.id("funds"),
@@ -330,7 +260,7 @@ function calculateRiskMetrics(assets: any[], priceFeeds: any[], holdings: any[],
     return acc;
   }, {});
 
-  const values = Object.values(assetTypes);
+  const values = Object.values(assetTypes) as number[];
   const maxValue = values.length > 0 ? Math.max(...values) : 0;
   const totalValue = values.reduce((sum, val) => sum + val, 0);
   const concentrationRisk = totalValue > 0 ? maxValue / totalValue : 0;

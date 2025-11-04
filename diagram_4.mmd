@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant I as 👤 Investor
+    participant P as 🌐 Platform
+    participant C as ✅ Compliance
+    participant X as 🔗 XRPL
+    participant W as 💰 Wallet
+
+    I->>P: Submit Subscription Request
+    P->>C: Verify KYC/AML
+    C->>P: Compliance Approved
+    P->>X: Create Token Transaction
+    X->>X: Validate & Process
+    X->>W: Mint Tokens to Wallet
+    W->>I: Tokens Received
+    P->>I: Confirmation & Receipt

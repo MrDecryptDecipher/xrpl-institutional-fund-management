@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Xaman Connection</title>
+    <script src="https://unpkg.com/xumm@1.8.0/dist/xumm.min.js"></script>
+</head>
+<body>
+    <h1>Debug Xaman Connection</h1>
+    <button id="testButton">Test Xaman Connection</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', async () => {
+            try {
+                console.log("Testing Xaman connection...");
+                document.getElementById('result').innerHTML = "Testing Xaman connection...";
+                
+                // Initialize Xumm with your API key
+                const xumm = new Xumm('b53edeaf-0046-49a6-a100-4bb284be3682');
+                
+                console.log("Xumm initialized successfully");
+                document.getElementById('result').innerHTML = "Xumm initialized successfully";
+                
+                // Test creating a simple payload
+                const payload = await xumm.payload.create({
+                    TransactionType: "SignIn",
+                    SignIn: true
+                });
+                
+                if (payload) {
+                    console.log("Payload created successfully");
+                    console.log("Payload UUID:", payload.uuid);
+                    console.log("QR Code URL:", payload.next?.always);
+                    
+                    document.getElementById('result').innerHTML = `
+                        <p>Payload created successfully</p>
+                        <p>Payload UUID: ${payload.uuid}</p>
+                        <p>QR Code URL: <a href="${payload.next?.always}" target="_blank">${payload.next?.always}</a></p>
+                    `;
+                    
+                    // Cancel the payload since we're just testing
+                    await xumm.payload.cancel(payload.uuid);
+                    console.log("Payload cancelled");
+                } else {
+                    console.log("Failed to create payload");
+                    document.getElementById('result').innerHTML = "Failed to create payload";
+                }
+            } catch (error) {
+                console.error("Error testing Xaman connection:", error);
+                document.getElementById('result').innerHTML = "Error: " + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

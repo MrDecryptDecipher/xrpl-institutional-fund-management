@@ -3,6 +3,26 @@ import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
 const applicationTables = {
+  // User Profiles
+  users: defineTable({
+    fullName: v.optional(v.string()),
+    email: v.optional(v.string()),
+    xrplAccount: v.optional(v.string()),
+    networkPreference: v.optional(v.union(
+      v.literal("demo"),
+      v.literal("testnet"),
+      v.literal("mainnet")
+    )),
+    xamanUserToken: v.optional(v.string()), // Xaman user token for push notifications
+    xamanTokenExpiry: v.optional(v.number()), // Token expiry timestamp
+    createdAt: v.optional(v.number()),
+    lastLogin: v.optional(v.number()),
+    // Legacy auth fields
+    isAnonymous: v.optional(v.boolean()),
+  })
+    .index("by_email", ["email"])
+    .index("by_xrpl_account", ["xrplAccount"]),
+
   // Core Fund Management
   funds: defineTable({
     name: v.string(),
@@ -524,6 +544,7 @@ const applicationTables = {
       executionData: v.optional(v.string())
     }),
     xrplTxHash: v.optional(v.string()),
+    xrplLedgerIndex: v.optional(v.number()),
     complianceRules: v.array(v.string()),
     jurisdictions: v.array(v.string()),
     hash: v.string()
@@ -534,31 +555,45 @@ const applicationTables = {
 
   // XRPL MPT Tokens
   mptTokens: defineTable({
-    mptId: v.string(),
+    tokenId: v.string(),
+    fundId: v.optional(v.id("funds")),
+    assetId: v.optional(v.id("assets")),
+    flags: v.number(),
+    transferFee: v.number(),
+    maxSupply: v.optional(v.string()),
+    outstandingAmount: v.string(),
+    symbol: v.string(),
+    metadata: v.object({
+      name: v.string(),
+      symbol: v.string(),
+      description: v.string(),
+      image: v.optional(v.string()),
+      externalUrl: v.optional(v.string()),
+      attributes: v.array(v.object({
+        traitType: v.string(),
+        value: v.string()
+      }))
+    }),
+    authorizedHolders: v.array(v.string()),
+    requiresAuthorization: v.boolean(),
+    jurisdictionRestrictions: v.array(v.string()),
+    investorTypeRestrictions: v.array(v.string()),
     issuer: v.string(),
-    name: v.string(),
-    symbol: v.string(), 
-    description: v.string(),
-    totalSupply: v.string(),
-    decimals: v.number(),
-    uri: v.optional(v.string()),
-    transferFee: v.optional(v.number()),
-    flags: v.optional(v.object({
-      transferable: v.boolean(),
-      burnable: v.boolean(),
-      onlyXRP: v.boolean(),
-      trustLine: v.boolean(),
-      requireAuth: v.boolean()
-    })),
-    network: v.string(),
-    txHash: v.string(),
-    ledgerIndex: v.number(),
-    createdAt: v.number(),
-    status: v.string()
+    createdLedger: v.number(),
+    lastModified: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("frozen"),
+      v.literal("clawback_enabled"),
+      v.literal("retired"),
+      v.literal("locked"),
+      v.literal("partially_locked")
+    )
   })
     .index("by_issuer", ["issuer"])
-    .index("by_symbol", ["symbol"])
-    .index("by_mpt_id", ["mptId"]),
+    .index("by_token_id", ["tokenId"])
+    .index("by_fund", ["fundId"])
+    .index("by_symbol", ["symbol"]),
 
   // XRPL Permissioned Domains
   permissionedDomains: defineTable({
@@ -579,7 +614,413 @@ const applicationTables = {
   })
     .index("by_owner", ["owner"])
     .index("by_domain_id", ["domainId"])
+    .index("by_fund", ["fundId"]),
+
+  // XRPL Connections
+  xrplConnections: defineTable({
+    network: v.string(),
+    server: v.string(),
+    isConnected: v.boolean(),
+    lastPing: v.number(),
+    networkId: v.number()
+  })
+    .index("by_network", ["network"]),
+
+  // XRPL Transactions
+  xrplTransactions: defineTable({
+    network: v.string(),
+    hash: v.string(),
+    transactionType: v.string(),
+    account: v.string(),
+    destination: v.optional(v.string()),
+    amount: v.optional(v.string()),
+    fee: v.string(),
+    result: v.string(),
+    ledgerIndex: v.number(),
+    submittedAt: v.number(),
+    validated: v.boolean(),
+    mptokenIssuanceId: v.optional(v.string()),
+    holder: v.optional(v.string()),
+    flags: v.optional(v.number())
+  })
+    .index("by_network", ["network"])
+    .index("by_account", ["account"])
+    .index("by_hash", ["hash"])
+    .index("by_transaction_type", ["transactionType"]),
+
+  // Lending Pools
+  lendingPools: defineTable({
+    poolId: v.string(),
+    fundId: v.optional(v.id("funds")),
+    asset: v.string(),
+    totalSupply: v.string(),
+    totalBorrow: v.string(),
+    utilizationRate: v.number(),
+    supplyRate: v.number(),
+    borrowRate: v.number(),
+    reserveFactor: v.number(),
+    collateralFactor: v.number(),
+    liquidationThreshold: v.number(),
+    liquidationPenalty: v.number(),
+    poolTokenId: v.string(),
+    collateralTokenIds: v.array(v.string()),
+    eligibleBorrowers: v.array(v.string()),
+    jurisdictionRestrictions: v.array(v.string()),
+    createdAt: v.number(),
+    lastUpdate: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("deprecated")
+    )
+  })
     .index("by_fund", ["fundId"])
+    .index("by_asset", ["asset"])
+    .index("by_pool_id", ["poolId"])
+    .index("by_status", ["status"]),
+
+  // Lending Positions
+  lendingPositions: defineTable({
+    positionId: v.string(),
+    poolId: v.id("lendingPools"),
+    investorId: v.id("investors"),
+    type: v.union(v.literal("supply"), v.literal("borrow")),
+    amount: v.string(),
+    shares: v.string(),
+    accruedInterest: v.string(),
+    lastInterestUpdate: v.number(),
+    collateralAmount: v.optional(v.string()),
+    collateralTokenId: v.optional(v.string()),
+    healthFactor: v.optional(v.number()),
+    lastTxHash: v.string(),
+    lastLedgerIndex: v.number(),
+    openedAt: v.number(),
+    lastUpdate: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("liquidated"),
+      v.literal("closed")
+    )
+  })
+    .index("by_pool", ["poolId"])
+    .index("by_investor", ["investorId"])
+    .index("by_position_id", ["positionId"])
+    .index("by_type", ["type"])
+    .index("by_status", ["status"]),
+
+  // Subscription Management
+  subscriptions: defineTable({
+    fundId: v.id("funds"),
+    investorId: v.id("investors"),
+    subscriptionAmount: v.number(),
+    sharePrice: v.number(),
+    sharesIssued: v.number(),
+    currency: v.string(),
+    subscriptionType: v.string(),
+    paymentMethod: v.string(),
+    settlementInstructions: v.any(),
+    clientReference: v.string(),
+    status: v.union(
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    complianceValidation: v.any(),
+    currentNAV: v.any(),
+    failureReason: v.optional(v.string())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_investor", ["investorId"])
+    .index("by_status", ["status"]),
+
+  // Redemption Management
+  redemptions: defineTable({
+    fundId: v.id("funds"),
+    investorId: v.id("investors"),
+    redemptionShares: v.number(),
+    redemptionValue: v.number(),
+    sharePrice: v.number(),
+    redemptionType: v.string(),
+    redemptionReason: v.string(),
+    settlementInstructions: v.any(),
+    clientReference: v.string(),
+    status: v.union(
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    complianceValidation: v.any(),
+    currentNAV: v.any(),
+    failureReason: v.optional(v.string())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_investor", ["investorId"])
+    .index("by_status", ["status"]),
+
+  // Portfolio Rebalancing Records
+  rebalancingRecords: defineTable({
+    fundId: v.id("funds"),
+    rebalancingStrategy: v.string(),
+    targetAllocations: v.any(),
+    rebalancingConstraints: v.any(),
+    currentPortfolioMetrics: v.any(),
+    riskAssessment: v.any(),
+    complianceValidation: v.any(),
+    tradingInstructions: v.any(),
+    executionMode: v.string(),
+    approvalRequired: v.boolean(),
+    status: v.union(
+      v.literal("PENDING_APPROVAL"),
+      v.literal("PROCESSING"),
+      v.literal("COMPLETED"),
+      v.literal("FAILED"),
+      v.literal("CANCELLED")
+    ),
+    createdAt: v.number(),
+    executedAt: v.optional(v.number()),
+    executionResults: v.optional(v.any())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_status", ["status"]),
+
+  // Oracle Price Feeds
+  priceFeeds: defineTable({
+    symbol: v.string(),
+    source: v.string(),
+    price: v.number(),
+    currency: v.string(),
+    timestamp: v.number(),
+    oracleId: v.string(),
+    xrplLedgerIndex: v.number(),
+    confidence: v.number(),
+    spread: v.number(),
+    volume: v.number(),
+    lastUpdate: v.number(),
+    updateFrequency: v.number()
+  })
+    .index("by_symbol", ["symbol"])
+    .index("by_source", ["source"])
+    .index("by_timestamp", ["timestamp"]),
+
+  // Settlement Processing
+  settlements: defineTable({
+    subscriptionId: v.optional(v.id("subscriptions")),
+    redemptionId: v.optional(v.id("redemptions")),
+    fundId: v.id("funds"),
+    investorId: v.id("investors"),
+    settlementType: v.union(
+      v.literal("SUBSCRIPTION"),
+      v.literal("REDEMPTION"),
+      v.literal("DIVIDEND"),
+      v.literal("FEE")
+    ),
+    originalAmount: v.number(),
+    originalCurrency: v.string(),
+    settlementAmount: v.number(),
+    settlementCurrency: v.string(),
+    fxRate: v.number(),
+    fxCost: v.number(),
+    settlementInstructions: v.any(),
+    settlementDate: v.number(),
+    crossBorderTransaction: v.boolean(),
+    custodyResult: v.optional(v.any()),
+    status: v.union(
+      v.literal("PROCESSING"),
+      v.literal("COMPLETED"),
+      v.literal("FAILED"),
+      v.literal("CANCELLED")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+    xrplTxHash: v.optional(v.string()),
+    xrplLedgerIndex: v.optional(v.number()),
+    executionTimestamp: v.optional(v.number()),
+    failureReason: v.optional(v.string())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_investor", ["investorId"])
+    .index("by_type", ["settlementType"])
+    .index("by_status", ["status"]),
+
+  // XRPL Hooks Registry
+  hookRegistry: defineTable({
+    fundId: v.id("funds"),
+    hookAccount: v.string(),
+    hookNamespace: v.string(),
+    hookCode: v.string(),
+    complianceRules: v.any(),
+    auditConfiguration: v.any(),
+    deploymentTxHash: v.string(),
+    deploymentLedger: v.number(),
+    initializationTxHash: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("upgrading"),
+      v.literal("deprecated")
+    ),
+    network: v.string(),
+    createdAt: v.number(),
+    lastActivity: v.number(),
+    auditTriggers: v.optional(v.any()),
+    upgradeHistory: v.optional(v.any())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_status", ["status"]),
+
+  // Bridge Registry
+  bridgeRegistry: defineTable({
+    fundId: v.id("funds"),
+    sourceChain: v.string(),
+    destinationChain: v.string(),
+    gatewayConfig: v.any(),
+    complianceContracts: v.any(),
+    bridgeConfiguration: v.any(),
+    complianceConfig: v.any(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("maintenance")
+    ),
+    createdAt: v.number(),
+    lastActivity: v.number(),
+    assetMappings: v.optional(v.any())
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_chains", ["sourceChain", "destinationChain"]),
+
+  // Bridge Transactions
+  bridgeTransactions: defineTable({
+    bridgeId: v.id("bridgeRegistry"),
+    fundId: v.id("funds"),
+    assetId: v.id("assets"),
+    amount: v.number(),
+    sourceAccount: v.string(),
+    destinationAccount: v.string(),
+    bridgeDirection: v.union(
+      v.literal("to_evm"),
+      v.literal("from_evm")
+    ),
+    sourceTxHash: v.string(),
+    destinationTxHash: v.string(),
+    bridgeCosts: v.any(),
+    complianceValidation: v.any(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    createdAt: v.number()
+  })
+    .index("by_bridge", ["bridgeId"])
+    .index("by_fund", ["fundId"]),
+
+  // HSM/MPC Key Management
+  keyManagement: defineTable({
+    fundId: v.id("funds"),
+    hsmProvider: v.string(),
+    hsmConfiguration: v.any(),
+    hsmConnection: v.any(),
+    masterKeyHierarchy: v.any(),
+    complianceRequirements: v.any(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("rotating")
+    ),
+    createdAt: v.number(),
+    lastActivity: v.number(),
+    rotationSchedule: v.optional(v.any())
+  })
+    .index("by_fund", ["fundId"]),
+
+  // MPC Management
+  mpcManagement: defineTable({
+    fundId: v.id("funds"),
+    mpcProvider: v.string(),
+    mpcConfiguration: v.any(),
+    mpcSession: v.any(),
+    dkgResult: v.any(),
+    xrplKeyPairs: v.any(),
+    securityPolicy: v.any(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("refreshing")
+    ),
+    createdAt: v.number(),
+    lastActivity: v.number(),
+    refreshSchedule: v.optional(v.any())
+  })
+    .index("by_fund", ["fundId"]),
+
+  // DID Documents
+  didDocuments: defineTable({
+    did: v.string(),
+    userId: v.optional(v.id("users")),
+    investorId: v.optional(v.id("investors")),
+    document: v.any(),
+    verifiableCredentials: v.array(v.any()),
+    xrplAccount: v.string(),
+    anchorLedger: v.number(),
+    anchorHash: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("revoked"),
+      v.literal("expired")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    version: v.number()
+  })
+    .index("by_did", ["did"])
+    .index("by_user", ["userId"])
+    .index("by_investor", ["investorId"]),
+
+  // MPT Mint Records
+  mptMintRecords: defineTable({
+    fundId: v.id("funds"),
+    investorAccount: v.string(),
+    shareTokens: v.number(),
+    subscriptionId: v.id("subscriptions"),
+    txHash: v.string(),
+    ledgerIndex: v.number(),
+    complianceHash: v.string(),
+    timestamp: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("completed"),
+      v.literal("failed")
+    )
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_investor", ["investorAccount"]),
+
+  // MPT Burn Records
+  mptBurnRecords: defineTable({
+    fundId: v.id("funds"),
+    investorAccount: v.string(),
+    shareTokens: v.number(),
+    redemptionId: v.id("redemptions"),
+    txHash: v.string(),
+    ledgerIndex: v.number(),
+    complianceHash: v.string(),
+    timestamp: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("completed"),
+      v.literal("failed")
+    )
+  })
+    .index("by_fund", ["fundId"])
+    .index("by_investor", ["investorAccount"])
 };
 
 export default defineSchema({

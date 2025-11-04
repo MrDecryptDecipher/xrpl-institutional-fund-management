@@ -1,0 +1,348 @@
+# tec Codes
+URL: https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes
+Section: J1
+
+## Overview
+
+
+## Extracted Content
+# tec Codes
+
+[Source]
+
+These codes indicate that the transaction did not succeed, but it was applied to a ledger to apply the transaction cost and may have had other side effects to the ledger. The tec codes have numerical values in the range 100 to 199. It is recommended to use the text code, not the numeric value.
+
+`tec`
+
+A transaction that fails with a tec code destroys the XRP paid as a transaction cost and consumes a sequence number. Although the transaction did not succeed, it may also cause some bookkeeping or cleanup work to be done. For example, a transaction that results in tecOVERSIZE still removes some unfunded offers. Always look at the transaction metadata to see precisely what a transaction did.
+
+`tec`
+
+`tecOVERSIZE`
+
+CautionA transaction that provisionally failed with a tec code may still succeed or fail with a different code after being reapplied. The result is final when it appears in a validated ledger version. For more information, see Finality of Results and Reliable Transaction Submission.
+
+`tec`
+
+| Code | Value | Explanation |
+| --- | --- | --- |
+| tecAMM_ACCOUNT | 168 | The transaction failed because the operation is not allowed on Automated Market Maker (AMM) accounts. (Added by the AMM amendment) |
+| tecAMM_UNFUNDED | 162 | The AMMCreate transaction failed because the sender does not have enough of the specified assets to fund it. (Added by the AMM amendment) |
+| tecAMM_BALANCE | 163 | The AMMDeposit or AMMWithdraw transaction failed because either the AMM or the user does not hold enough of one of the specified assets. (For example, you tried to withdraw more than the AMM holds.) (Added by the AMM amendment) |
+| tecAMM_EMPTY | 166 | The AMM-related transaction failed because the AMM has no assets in its pool. In this state, you can only delete the AMM or fund it with a new deposit. (Added by the AMM amendment) |
+| tecAMM_FAILED | 164 | The AMM-related transaction failed. For AMMDeposit or AMMWithdraw this could be because the sender does not have enough of the specified assets, or the transaction requested an effective price that isn't possible with the available amounts. For AMMBid this could be because the account does not have enough to win the bid or needs more than their specified maximum bid. For AMMVote, this could be because there are already too many votes from other accounts that hold more of this AMM's LP Tokens. (Added by the AMM amendment) |
+| tecAMM_INVALID_TOKENS | 165 | The AMM-related transaction failed due to insufficient LP Tokens or problems with rounding; for example, depositing a very small amount of assets could fail if the amount of LP Tokens to be returned rounds down to zero. (Added by the AMM amendment) |
+| tecAMM_NOT_EMPTY | 167 | The transaction was meant to operate on an AMM with empty asset pools, but the specified AMM currently holds assets. (Added by the AMM amendment) |
+| tecCANT_ACCEPT_OWN_NFTOKEN_OFFER | 157 | The transaction tried to accept an offer that was placed by the same account to buy or sell a non-fungible token. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecCLAIM | 100 | Unspecified failure, with transaction cost destroyed. |
+| tecCRYPTOCONDITION_ERROR | 146 | This EscrowCreate or EscrowFinish transaction contained a malformed or mismatched crypto-condition. |
+| tecDIR_FULL | 121 | The transaction tried to add an object (such as a trust line, Check, Escrow, or Payment Channel) to an account's owner directory, but that account cannot own any more objects in the ledger. |
+| tecDUPLICATE | 149 | The transaction tried to create an object (such as a DepositPreauth authorization) that already exists. |
+| tecDST_TAG_NEEDED | 143 | The Payment transaction omitted a destination tag, but the destination account has the lsfRequireDestTag flag enabled. |
+| tecEMPTY_DID | 187 | The transaction tried to create a DID entry with no contents. A DID must not be empty. (Added by the DID amendment ) |
+| tecEXPIRED | 148 | The transaction tried to create an object (such as an Offer or a Check) whose provided Expiration time has already passed. |
+| tecFAILED_PROCESSING | 105 | An unspecified error occurred when processing the transaction. |
+| tecFROZEN | 137 | The OfferCreate transaction failed because one or both of the assets involved are subject to a global freeze. |
+| tecHAS_OBLIGATIONS | 151 | The AccountDelete transaction failed because the account to be deleted owns objects that cannot be deleted. See Deleting Accounts for details. |
+| tecINSUF_RESERVE_LINE | 122 | The transaction failed because the sending account does not have enough XRP to create a new trust line. (See: Reserves) This error occurs when the counterparty already has a trust line in a non-default state to the sending account for the same currency. (See tecNO_LINE_INSUF_RESERVE for the other case.) |
+| tecINSUF_RESERVE_OFFER | 123 | The transaction failed because the sending account does not have enough XRP to create a new Offer. (See: Reserves) |
+| tecINSUFF_FEE | 136 | The transaction failed because the sending account does not have enough XRP to pay the transaction cost that it specified. (In this case, the transaction processing destroys all of the sender's XRP even though that amount is lower than the specified transaction cost.) This result only occurs if the account's balance decreases after this transaction has been distributed to enough of the network to be included in a consensus set. Otherwise, the transaction fails with terINSUF_FEE_B before being distributed. |
+| tecINSUFFICIENT_FUNDS | 158 | One of the accounts involved does not hold enough of a necessary asset. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecINSUFFICIENT_PAYMENT | 161 | The amount specified is not enough to pay all fees involved in the transaction. For example, when trading a non-fungible token, the buy amount may not be enough to pay both the broker fee and the sell amount. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecINSUFFICIENT_RESERVE | 141 | The transaction would increase the reserve requirement higher than the sending account's balance. SignerListSet, PaymentChannelCreate, PaymentChannelFund, and EscrowCreate can return this error code. See Signer Lists and Reserves for more information. |
+| tecINTERNAL | 144 | Unspecified internal error, with transaction cost applied. This error code should not normally be returned. If you can reproduce this error, please report an issue. |
+| tecINVALID_UPDATE_TIME | 188 | The OracleSet transaction failed because the LastUpdateTime is invalid. This can occur when the time is more than 300 seconds before or after the ledger close time, or when updating an existing oracle, the new LastUpdateTime is not greater than the previous value. (Added by the PriceOracle amendment) |
+| tecINVARIANT_FAILED | 147 | An invariant check failed when trying to execute this transaction. Added by the EnforceInvariants amendment. If you can reproduce this error, please report an issue. |
+| tecKILLED | 150 | The OfferCreate transaction specified the tfFillOrKill flag and could not be filled, so it was killed. (Added by the fix1578 amendment.) |
+| tecMAX_SEQUENCE_REACHED | 153 | A sequence number field is already at its maximum. This includes the MintedNFTokens field. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecNEED_MASTER_KEY | 142 | This transaction tried to cause changes that require the master key, such as disabling the master key or giving up the ability to freeze balances. |
+| tecNFTOKEN_BUY_SELL_MISMATCH | 155 | The NFTokenAcceptOffer transaction attempted to match incompatible offers to buy and sell a non-fungible token. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecNFTOKEN_OFFER_TYPE_MISMATCH | 156 | One or more of the offers specified in the transaction was not the right type of offer. (For example, a buy offer was specified in the NFTokenSellOffer field.) (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecNO_ALTERNATIVE_KEY | 130 | The transaction tried to remove the only available method of authorizing transactions. This could be a SetRegularKey transaction to remove the regular key, a SignerListSet transaction to delete a SignerList, or an AccountSet transaction to disable the master key. (Prior to rippled 0.30.0, this was called tecMASTER_DISABLED.) |
+| tecNO_AUTH | 134 | The transaction failed because it needs to add a balance on a trust line to an account with the lsfRequireAuth flag enabled, and that trust line has not been authorized. If the trust line does not exist at all, tecNO_LINE occurs instead. |
+| tecNO_DST | 124 | The account on the receiving end of the transaction does not exist. This includes Payment and TrustSet transaction types. (It could be created if it received enough XRP.) |
+| tecNO_DST_INSUF_XRP | 125 | The account on the receiving end of the transaction does not exist, and the transaction is not sending enough XRP to create it. |
+| tecNO_ENTRY | 140 | The transaction tried to modify a ledger object, such as a Check, Payment Channel, or Deposit Preauthorization, but the specified object does not exist. It may have already been deleted by a previous transaction or the transaction may have an incorrect value in an ID field such as CheckID, Channel, Unauthorize. |
+| tecNO_ISSUER | 133 | The account specified in the issuer field of a currency amount does not exist. |
+| tecNO_LINE | 135 | The TakerPays field of the OfferCreate transaction specifies an asset whose issuer has lsfRequireAuth enabled, and the account making the offer does not have a trust line for that asset. (Normally, making an offer implicitly creates a trust line if necessary, but in this case it does not bother because you cannot hold the asset without authorization.) If the trust line exists, but is not authorized, tecNO_AUTH occurs instead. |
+| tecNO_LINE_INSUF_RESERVE | 126 | The transaction failed because the sending account does not have enough XRP to create a new trust line. (See: Reserves) This error occurs when the counterparty does not have a trust line to this account for the same currency. (See tecINSUF_RESERVE_LINE for the other case.) |
+| tecNO_LINE_REDUNDANT | 127 | The transaction failed because it tried to set a trust line to its default state, but the trust line did not exist. |
+| tecNO_PERMISSION | 139 | The sender does not have permission to do this operation. For example, the EscrowFinish transaction tried to release a held payment before its FinishAfter time, someone tried to use PaymentChannelFund on a channel the sender does not own, or a Payment tried to deliver funds to an account with the "DepositAuth" flag enabled. |
+| tecNO_REGULAR_KEY | 131 | The AccountSet transaction tried to disable the master key, but the account does not have another way to authorize transactions. If multi-signing is enabled, this code is deprecated and tecNO_ALTERNATIVE_KEY is used instead. |
+| tecNO_SUITABLE_NFTOKEN_PAGE | 154 | The transaction tried to mint or acquire a non-fungible token but the account receiving the NFToken does not have a directory page that can hold it. This situation is rare. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecNO_TARGET | 138 | The transaction referenced an Escrow or PayChannel ledger object that doesn't exist, either because it never existed or it has already been deleted. (For example, another EscrowFinish transaction has already executed the held payment.) Alternatively, the destination account has asfDisallowXRP set so it cannot be the destination of this PaymentChannelCreate or EscrowCreate transaction. |
+| tecOBJECT_NOT_FOUND | 160 | One of the objects specified by this transaction did not exist in the ledger. (Added by the NonFungibleTokensV1_1 amendment.) |
+| tecOVERSIZE | 145 | This transaction could not be processed, because the server created an excessively large amount of metadata when it tried to apply the transaction. |
+| tecOWNERS | 132 | The transaction cannot succeed because the sender already owns objects in the ledger. For example, an account cannot enable the lsfRequireAuth flag if it has any trust lines or available offers. |
+| tecPATH_DRY | 128 | The transaction failed because the provided paths did not have enough liquidity to send anything at all. This could mean that the source and destination accounts are not linked by trust lines. |
+| tecPATH_PARTIAL | 101 | The transaction failed because the provided paths did not have enough liquidity to send the full amount. |
+| tecTOO_SOON | 152 | The AccountDelete transaction failed because the account to be deleted had a Sequence number that is too high. The current ledger index must be at least 256 higher than the account's sequence number. |
+| tecUNFUNDED | 129 | The transaction failed because the account does not hold enough XRP to pay the amount in the transaction and satisfy the additional reserve necessary to execute this transaction. |
+| tecUNFUNDED_ADD | 102 | DEPRECATED. |
+| tecUNFUNDED_PAYMENT | 104 | The transaction failed because the sending account is trying to send more XRP than it holds, not counting the reserve. |
+| tecUNFUNDED_OFFER | 103 | The OfferCreate transaction failed because the account creating the offer does not have any of the TakerGets currency. |
+
+
+`tecAMM_ACCOUNT`
+
+`tecAMM_UNFUNDED`
+
+`tecAMM_BALANCE`
+
+`tecAMM_EMPTY`
+
+`tecAMM_FAILED`
+
+`tecAMM_INVALID_TOKENS`
+
+`tecAMM_NOT_EMPTY`
+
+`tecCANT_ACCEPT_OWN_NFTOKEN_OFFER`
+
+`tecCLAIM`
+
+`tecCRYPTOCONDITION_ERROR`
+
+`tecDIR_FULL`
+
+`tecDUPLICATE`
+
+`tecDST_TAG_NEEDED`
+
+`lsfRequireDestTag`
+
+`tecEMPTY_DID`
+
+`tecEXPIRED`
+
+`tecFAILED_PROCESSING`
+
+`tecFROZEN`
+
+`tecHAS_OBLIGATIONS`
+
+`tecINSUF_RESERVE_LINE`
+
+`tecNO_LINE_INSUF_RESERVE`
+
+`tecINSUF_RESERVE_OFFER`
+
+`tecINSUFF_FEE`
+
+`terINSUF_FEE_B`
+
+`tecINSUFFICIENT_FUNDS`
+
+`tecINSUFFICIENT_PAYMENT`
+
+`tecINSUFFICIENT_RESERVE`
+
+`tecINTERNAL`
+
+`tecINVALID_UPDATE_TIME`
+
+`LastUpdateTime`
+
+`LastUpdateTime`
+
+`tecINVARIANT_FAILED`
+
+`tecKILLED`
+
+`tfFillOrKill`
+
+`tecMAX_SEQUENCE_REACHED`
+
+`MintedNFTokens`
+
+`tecNEED_MASTER_KEY`
+
+`tecNFTOKEN_BUY_SELL_MISMATCH`
+
+`tecNFTOKEN_OFFER_TYPE_MISMATCH`
+
+`NFTokenSellOffer`
+
+`tecNO_ALTERNATIVE_KEY`
+
+`rippled`
+
+`tecMASTER_DISABLED`
+
+`tecNO_AUTH`
+
+`lsfRequireAuth`
+
+`tecNO_LINE`
+
+`tecNO_DST`
+
+`tecNO_DST_INSUF_XRP`
+
+`tecNO_ENTRY`
+
+`CheckID`
+
+`Channel`
+
+`Unauthorize`
+
+`tecNO_ISSUER`
+
+`issuer`
+
+`tecNO_LINE`
+
+`TakerPays`
+
+`lsfRequireAuth`
+
+`tecNO_AUTH`
+
+`tecNO_LINE_INSUF_RESERVE`
+
+`tecINSUF_RESERVE_LINE`
+
+`tecNO_LINE_REDUNDANT`
+
+`tecNO_PERMISSION`
+
+`FinishAfter`
+
+`tecNO_REGULAR_KEY`
+
+`tecNO_ALTERNATIVE_KEY`
+
+`tecNO_SUITABLE_NFTOKEN_PAGE`
+
+`NFToken`
+
+`tecNO_TARGET`
+
+`asfDisallowXRP`
+
+`tecOBJECT_NOT_FOUND`
+
+`tecOVERSIZE`
+
+`tecOWNERS`
+
+`lsfRequireAuth`
+
+`tecPATH_DRY`
+
+`tecPATH_PARTIAL`
+
+`tecTOO_SOON`
+
+`Sequence`
+
+`tecUNFUNDED`
+
+`tecUNFUNDED_ADD`
+
+`tecUNFUNDED_PAYMENT`
+
+`tecUNFUNDED_OFFER`
+
+`TakerGets`
+
+## Images
+
+![XRP LEDGER](data:,)
+
+![Documentation || Dive into XRP Ledger technology and start integrating. icon](https://xrpl.org/assets/docs.4c378e43a6ae1375869ec22831e79f4ce2f3273ae2b00f029a3e3645a0ca6bed.82dffa6a.svg)
+
+![Contribute to the XRPL Community || Join the conversation icon](https://xrpl.org/assets/contribute.5ef42ea6b2ef13b04b062d81a1687e75068ddd08d22b21b4871e591addb2f3fe.82dffa6a.svg)
+
+![Image](https://t.co/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=07745823-bd1a-491b-bad8-fc2e25d80481&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o309v&type=javascript&version=2.3.34)
+
+![Image](https://analytics.twitter.com/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=07745823-bd1a-491b-bad8-fc2e25d80481&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o309v&type=javascript&version=2.3.34)
+
+![Image](https://t.co/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=10fb427f-42dc-4777-8c8e-af878ae65c8a&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o61w3&type=javascript&version=2.3.34)
+
+![Image](https://analytics.twitter.com/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=10fb427f-42dc-4777-8c8e-af878ae65c8a&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o61w3&type=javascript&version=2.3.34)
+
+![Image](https://bat.bing.com/action/0?ti=26326193&Ver=2&mid=4b1c4d2a-11ed-49ca-a5d3-cdd54bb444be&bo=1&sid=40d7e6509da411f0a31b1f3fd65237d8&vid=40d860a09da411f0a458511def0c623d&vids=1&msclkid=N&uach=pv%3D10.0&pi=0&lg=en-US@posix&sw=1280&sh=720&sc=24&nwd=1&tl=tec%20Codes&p=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&r=&lt=2846&evt=pageLoad&sv=2&cdb=AQAS&rn=491923)
+
+![Image](https://t.co/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=e34adef6-5a19-4d5f-a9da-3da29f843b88&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o309v&type=javascript&version=2.3.34)
+
+![Image](https://analytics.twitter.com/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=e34adef6-5a19-4d5f-a9da-3da29f843b88&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o309v&type=javascript&version=2.3.34)
+
+![Image](https://t.co/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=a00bf979-1114-4a3d-8351-01bb222b31cb&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o61w3&type=javascript&version=2.3.34)
+
+![Image](https://analytics.twitter.com/i/adsct?bci=3&dv=UTC%26en-US%40posix%26Google%20Inc.%26Linux%20x86_64%26255%261280%26720%264%2624%261280%26720%260%26na&eci=2&event_id=a00bf979-1114-4a3d-8351-01bb222b31cb&events=%5B%5B%22pageview%22%2C%7B%7D%5D%5D&integration=advertiser&p_id=Twitter&p_user_id=0&pl_id=d311c31e-ec72-41b2-86e8-30dacc252d73&pt=tec%20Codes&tw_document_href=https%3A%2F%2Fxrpl.org%2Fdocs%2Freferences%2Fprotocol%2Ftransactions%2Ftransaction-results%2Ftec-codes&tw_iframe_status=0&tw_order_quantity=0&tw_sale_amount=0&txn_id=o61w3&type=javascript&version=2.3.34)
+
+
+## Outbound References
+## Internal XRPL References
+
+- [Cookie Policy](https://xrpl.org/privacy-policy.html)
+- [https://xrpl.org/](https://xrpl.org/)
+- [About](https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes#)
+- [XRPL Overview](https://xrpl.org/about)
+- [Use Cases & Featured Projects](https://xrpl.org/about/uses)
+- [History](https://xrpl.org/about/history)
+- [XRP Overview](https://xrpl.org/about/xrp)
+- [Impact](https://xrpl.org/about/impact)
+- [FAQ](https://xrpl.org/about/faq)
+- [Privacy Policy](https://xrpl.org/about/privacy-policy)
+- [Docs](https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes#)
+- [DocumentationDive into XRP Ledger technology and start integrating.](https://xrpl.org/docs)
+- [Concepts](https://xrpl.org/docs/concepts)
+- [Tutorials](https://xrpl.org/docs/tutorials)
+- [References](https://xrpl.org/docs/references)
+- [Infrastructure](https://xrpl.org/docs/infrastructure)
+- [Payments](https://xrpl.org/docs/use-cases/payments)
+- [Tokenization](https://xrpl.org/docs/use-cases/tokenization)
+- [Decentralized Finance](https://xrpl.org/docs/use-cases/defi)
+- [JavaScript](https://xrpl.org/docs/tutorials/javascript)
+- [Python](https://xrpl.org/docs/tutorials/python)
+- [Java](https://xrpl.org/docs/tutorials/java)
+- [PHP](https://xrpl.org/docs/tutorials/php)
+- [Go](https://xrpl.org/docs/tutorials/go)
+- [HTTP / Websocket APIs](https://xrpl.org/docs/tutorials/http-websocket-apis)
+- [Resources](https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes#)
+- [Code Samples](https://xrpl.org/resources/code-samples)
+- [Dev Tools](https://xrpl.org/resources/dev-tools)
+- [XRPL Learning Portal](https://learn.xrpl.org/)
+- [XRPL Brand Kit](https://xrpl.org/XRPL_Brand_Kit.zip)
+- [Ledger Explorer](https://livenet.xrpl.org/)
+- [Known Amendments](https://xrpl.org/resources/known-amendments)
+- [Contribute Code](https://xrpl.org/resources/contribute-code)
+- [Contribute Documentation](https://xrpl.org/resources/contribute-documentation)
+- [Contribute Blog](https://xrpl.org/resources/contribute-blog)
+- [Community](https://xrpl.org/docs/references/protocol/transactions/transaction-results/tec-codes#)
+- [Contribute to the XRPL CommunityJoin the conversation](https://xrpl.org/community)
+- [Events](https://xrpl.org/community/events)
+- [Ambassadors](https://xrpl.org/community/ambassadors)
+- [Developer Funding](https://xrpl.org/community/developer-funding)
+- [XRPL Jobs](https://jobs.xrpl.org/)
+- [Dev Blog](https://xrpl.org/blog)
+- [Report a Scam](https://xrpl.org/community/report-a-scam)
+- [Documentation](https://xrpl.org/docs)
+- [Introduction](https://xrpl.org/docs/introduction)
+- [Use Cases](https://xrpl.org/docs/use-cases)
+- [Concepts](https://xrpl.org/docs/concepts)
+- [Tutorials](https://xrpl.org/docs/tutorials)
+- [References](https://xrpl.org/docs/references)
+- [XRP Ledger Protocol Reference](https://xrpl.org/docs/references/protocol)
+
+## External References
+
+- [XRPL Foundation](https://xrpl.foundation)
+- [XRPL Grants](https://xrplgrants.org/)
+- [GitHub](https://github.com/XRPLF/)
+- [Edit](https://github.com/XRPLF/xrpl-dev-portal/tree/master/docs/references/protocol/transactions/transaction-results/tec-codes.md)
+- [[Source]](https://github.com/XRPLF/rippled/blob/master/src/ripple/protocol/impl/TER.cpp)
+- [report an issue](https://github.com/XRPLF/rippled/issues)
+- [report an issue](https://github.com/XRPLF/rippled/issues)
+- [XRPL Foundation](https://xrpl.foundation)
+- [XRPL Grants](https://xrplgrants.org/)
+- [GitHub](https://github.com/XRPLF/)
+
+---
+Crawled on: 2025-09-30T02:22:19.896Z
+Agent: Qoder + Playwright MCP
+Retries: 0
+Status: SUCCESS

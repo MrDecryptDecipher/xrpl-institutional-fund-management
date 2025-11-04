@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - XRPL Fund Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .warning {
+            background: rgba(255, 152, 0, 0.2);
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .steps {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Clear Browser Cache</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> You're seeing an old cached version of the application. 
+            The file <code>contents.1c4f7a5d.js</code> is from an old build and needs to be cleared.
+        </div>
+
+        <h2>Quick Fix Options:</h2>
+
+        <div class="steps">
+            <h3>Option 1: Automatic Clear (Click Button)</h3>
+            <button onclick="clearAllCache()">🗑️ Clear All Cache & Reload</button>
+            <p id="status"></p>
+        </div>
+
+        <div class="steps">
+            <h3>Option 2: Manual Hard Refresh</h3>
+            <ol>
+                <li><strong>Windows/Linux:</strong> Press <code>Ctrl + Shift + R</code></li>
+                <li><strong>Mac:</strong> Press <code>Cmd + Shift + R</code></li>
+                <li><strong>Alternative:</strong> Press <code>Ctrl + F5</code> (Windows/Linux)</li>
+            </ol>
+        </div>
+
+        <div class="steps">
+            <h3>Option 3: Clear Browser Cache Manually</h3>
+            <ol>
+                <li>Open Developer Tools (<code>F12</code>)</li>
+                <li>Right-click the refresh button</li>
+                <li>Select "Empty Cache and Hard Reload"</li>
+            </ol>
+        </div>
+
+        <div class="steps">
+            <h3>Option 4: Use Incognito/Private Mode</h3>
+            <ol>
+                <li><strong>Chrome:</strong> Press <code>Ctrl + Shift + N</code></li>
+                <li><strong>Firefox:</strong> Press <code>Ctrl + Shift + P</code></li>
+                <li><strong>Safari:</strong> Press <code>Cmd + Shift + N</code></li>
+                <li>Navigate to <code>http://3.111.22.56:5002/</code></li>
+            </ol>
+        </div>
+
+        <div class="steps">
+            <h3>Option 5: Clear Browser Data</h3>
+            <ol>
+                <li>Open browser settings</li>
+                <li>Go to Privacy & Security</li>
+                <li>Click "Clear browsing data"</li>
+                <li>Select "Cached images and files"</li>
+                <li>Choose "Last hour" or "All time"</li>
+                <li>Click "Clear data"</li>
+            </ol>
+        </div>
+
+        <div class="success" style="display:none;" id="successMessage">
+            <strong>✅ Success!</strong> Cache cleared. The page will reload in 2 seconds...
+        </div>
+
+        <h2>After Clearing Cache:</h2>
+        <p>You should see:</p>
+        <ul>
+            <li>✅ No more <code>contents.1c4f7a5d.js</code> errors</li>
+            <li>✅ Login page loads correctly</li>
+            <li>✅ "Continue with Xaman" button works</li>
+            <li>✅ QR code appears when clicked</li>
+        </ul>
+
+        <button onclick="window.location.href='/'">🏠 Go to Home Page</button>
+        <button onclick="window.location.reload(true)">🔄 Force Reload</button>
+    </div>
+
+    <script>
+        function clearAllCache() {
+            const status = document.getElementById('status');
+            const successMessage = document.getElementById('successMessage');
+            
+            try {
+                // Clear localStorage
+                localStorage.clear();
+                status.innerHTML = '✓ LocalStorage cleared<br>';
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                status.innerHTML += '✓ SessionStorage cleared<br>';
+                
+                // Clear cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                status.innerHTML += '✓ Cookies cleared<br>';
+                
+                // Try to clear cache storage
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        names.forEach(function(name) {
+                            caches.delete(name);
+                        });
+                    });
+                    status.innerHTML += '✓ Cache storage cleared<br>';
+                }
+                
+                status.innerHTML += '<br><strong>✅ All storage cleared!</strong><br>';
+                successMessage.style.display = 'block';
+                
+                // Reload after 2 seconds
+                setTimeout(function() {
+                    window.location.href = '/?nocache=' + Date.now();
+                }, 2000);
+                
+            } catch (error) {
+                status.innerHTML = '❌ Error: ' + error.message + '<br>';
+                status.innerHTML += '<br>Please try one of the manual methods above.';
+            }
+        }
+
+        // Add cache-busting parameter to current URL
+        if (!window.location.search.includes('nocache')) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('nocache', Date.now());
+            window.history.replaceState({}, '', url);
+        }
+    </script>
+</body>
+</html>
+

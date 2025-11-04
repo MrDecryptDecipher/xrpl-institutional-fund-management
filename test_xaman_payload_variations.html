@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Xaman Payload Variations</title>
+</head>
+<body>
+    <h1>Test Xaman Payload Variations</h1>
+    <button id="testSignIn">Test SignIn Payload</button>
+    <button id="testPayment">Test Payment Payload</button>
+    <button id="testCreateAndSubscribe">Test CreateAndSubscribe</button>
+    <button id="clearButton">Clear Results</button>
+    <div id="result" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+
+    <script type="module">
+        // Import Xumm SDK
+        import { Xumm } from 'https://unpkg.com/xumm@1.8.0/dist/xumm.min.mjs';
+
+        // Add result to the page
+        function addResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            const formattedMessage = `[${timestamp}] ${message}\n`;
+            
+            if (isError) {
+                resultDiv.innerHTML += `<span style="color: red;">${formattedMessage}</span>`;
+            } else {
+                resultDiv.innerHTML += formattedMessage;
+            }
+            
+            console.log(message);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+
+        // Initialize Xumm with API key
+        const apiKey = 'b53edeaf-0046-49a6-a100-4bb284be3682';
+        addResult(`Initializing Xumm with API key: ${apiKey.substring(0, 8)}...`);
+        
+        const xumm = new Xumm(apiKey);
+        addResult("Xumm initialized successfully!");
+
+        // Set up event listeners
+        xumm.on("ready", () => {
+            addResult("Xumm SDK ready event fired");
+        });
+
+        xumm.on("error", (error) => {
+            addResult(`Xumm SDK error: ${error.message || "Unknown error"}`, true);
+        });
+
+        xumm.on("success", () => {
+            addResult("Xumm authorization successful");
+        });
+
+        // Test SignIn payload (current approach)
+        document.getElementById('testSignIn').addEventListener('click', async () => {
+            try {
+                addResult("Testing SignIn payload...");
+                
+                const payload = await xumm.payload.create({
+                    TransactionType: 'SignIn'
+                });
+                
+                addResult(`SignIn payload created: ${JSON.stringify(payload, null, 2)}`);
+                
+                // Cancel the payload
+                if (payload && payload.uuid) {
+                    await xumm.payload.cancel(payload.uuid);
+                    addResult("Payload cancelled");
+                }
+            } catch (error) {
+                addResult(`SignIn payload error: ${error.message}`, true);
+            }
+        });
+
+        // Test Payment payload (alternative approach)
+        document.getElementById('testPayment').addEventListener('click', async () => {
+            try {
+                addResult("Testing Payment payload...");
+                
+                const payload = await xumm.payload.create({
+                    TransactionType: 'Payment',
+                    Destination: 'rPEPPER7kfTD9w2To4CQk6UCfuHM9c6GDY',
+                    Amount: '1'
+                });
+                
+                addResult(`Payment payload created: ${JSON.stringify(payload, null, 2)}`);
+                
+                // Cancel the payload
+                if (payload && payload.uuid) {
+                    await xumm.payload.cancel(payload.uuid);
+                    addResult("Payload cancelled");
+                }
+            } catch (error) {
+                addResult(`Payment payload error: ${error.message}`, true);
+            }
+        });
+
+        // Test CreateAndSubscribe (alternative approach)
+        document.getElementById('testCreateAndSubscribe').addEventListener('click', async () => {
+            try {
+                addResult("Testing CreateAndSubscribe...");
+                
+                const { created } = await xumm.payload.createAndSubscribe({
+                    TransactionType: 'SignIn'
+                }, event => {
+                    addResult(`Payload event: ${JSON.stringify(event, null, 2)}`);
+                });
+                
+                addResult(`CreateAndSubscribe payload created: ${JSON.stringify(created, null, 2)}`);
+                
+                // Cancel the payload
+                if (created && created.uuid) {
+                    await xumm.payload.cancel(created.uuid);
+                    addResult("Payload cancelled");
+                }
+            } catch (error) {
+                addResult(`CreateAndSubscribe error: ${error.message}`, true);
+            }
+        });
+        
+        document.getElementById('clearButton').addEventListener('click', () => {
+            document.getElementById('result').innerHTML = '';
+        });
+    </script>
+</body>
+</html>

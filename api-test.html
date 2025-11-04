@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button id="healthBtn">Test Health API</button>
+    <button id="payloadBtn">Test Create Payload API</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('healthBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://3.111.22.56:3001/health');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<p>Health API Response: ${JSON.stringify(data)}</p>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p>Health API Error: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('payloadBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://3.111.22.56:3001/api/create-xaman-payload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        transactionType: 'SignIn'
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `<p>Payload API Response: ${JSON.stringify(data)}</p>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p>Payload API Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

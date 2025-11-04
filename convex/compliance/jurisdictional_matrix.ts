@@ -1,5 +1,4 @@
-"use node";
-
+// Define proper XRPL types and interfaces to avoid deep type instantiation issues
 import { action } from "../_generated/server";
 import { v } from "convex/values";
 import { Client, Wallet } from "xrpl";
@@ -11,19 +10,57 @@ type JurisdictionType = "MAS" | "FINMA" | "ESMA" | "VARA" | "SFC" | "SEC" | "FCA
 type ComplianceLevel = "basic" | "enhanced" | "institutional" | "ultra_secure";
 type RiskRating = "low" | "medium" | "high" | "prohibited";
 
-const XRPL_NETWORKS: Record<NetworkType, string> = {
-  testnet: "wss://s.altnet.rippletest.net:51233",
-  mainnet: "wss://xrplcluster.com",
-  devnet: "wss://s.devnet.rippletest.net:51233"
-};
+// Break down complex types into smaller interfaces
+interface KYCRequirement {
+  individualRequirements: string[];
+  corporateRequirements: string[];
+  enhancedDueDiligence: string[];
+  ongoingMonitoring: string[];
+  documentRetention: number;
+}
 
-/**
- * ADVANCED MULTI-JURISDICTIONAL COMPLIANCE MATRIX
- * Implements comprehensive regulatory compliance across 12+ major financial jurisdictions
- * Real-time compliance monitoring, cross-border coordination, automated reporting
- * Machine learning-powered risk assessment and regulatory change management
- * Advanced KYC/AML/CFT frameworks with institutional-grade security
- */
+interface AMLRequirement {
+  screeningLists: string[];
+  monitoringRequirements: string[];
+  reportingObligations: string[];
+  sanctionsCompliance: string[];
+  thresholds: {
+    ctr: number;
+    str: number;
+  };
+}
+
+interface InvestorClassification {
+  minNetWorth?: number;
+  minAnnualIncome?: number;
+  qualifications?: string[];
+  verification: string[];
+  investmentLimits?: number;
+}
+
+interface OperationalRequirement {
+  capitalRequirements: {
+    minimum: number;
+    ongoing: number;
+    liquidityBuffer: number;
+  };
+  governanceStandards: string[];
+  reportingFrequency: string;
+  auditRequirements: string[];
+}
+
+interface CrossBorderRule {
+  marketingRestrictions: string[];
+  distributionLimits: string[];
+  treatyCountries: string[];
+  mutualRecognition: boolean;
+}
+
+interface PenaltyFramework {
+  violations: Record<string, number>;
+  enforcement: string[];
+  appealProcess: string[];
+}
 
 interface AdvancedRegulatoryFramework {
   jurisdiction: JurisdictionType;
@@ -32,65 +69,25 @@ interface AdvancedRegulatoryFramework {
   complianceLevel: ComplianceLevel;
   riskRating: RiskRating;
   
-  kycFramework: {
-    individualRequirements: string[];
-    corporateRequirements: string[];
-    enhancedDueDiligence: string[];
-    ongoingMonitoring: string[];
-    documentRetention: number; // years
-  };
-  
-  amlRequirements: {
-    screeningLists: string[];
-    monitoringRequirements: string[];
-    reportingObligations: string[];
-    sanctionsCompliance: string[];
-    thresholds: {
-      ctr: number; // Currency Transaction Report
-      str: number; // Suspicious Transaction Report
-    };
-  };
-  
-  investorClassifications: {
-    [key: string]: {
-      minNetWorth?: number;
-      minAnnualIncome?: number;
-      qualifications?: string[];
-      verification: string[];
-      investmentLimits?: number;
-    };
-  };
-  
-  operationalRequirements: {
-    capitalRequirements: {
-      minimum: number;
-      ongoing: number;
-      liquidityBuffer: number;
-    };
-    governanceStandards: string[];
-    reportingFrequency: string;
-    auditRequirements: string[];
-  };
-  
-  crossBorderRules: {
-    marketingRestrictions: string[];
-    distributionLimits: string[];
-    treatyCountries: string[];
-    mutualRecognition: boolean;
-  };
-  
-  penaltyFramework: {
-    violations: {[key: string]: number};
-    enforcement: string[];
-    appealProcess: string[];
-  };
+  kycFramework: KYCRequirement;
+  amlRequirements: AMLRequirement;
+  investorClassifications: Record<string, InvestorClassification>;
+  operationalRequirements: OperationalRequirement;
+  crossBorderRules: CrossBorderRule;
+  penaltyFramework: PenaltyFramework;
 }
 
-// Comprehensive regulatory frameworks for major jurisdictions
-const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulatoryFramework> = {
-  MAS: {
+const XRPL_NETWORKS: Record<NetworkType, string> = {
+  testnet: "wss://s.altnet.rippletest.net:51233",
+  mainnet: "wss://xrplcluster.com",
+  devnet: "wss://s.devnet.rippletest.net:51233"
+};
+
+// Factory functions to create jurisdictional data without deep type instantiation
+function createMASFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "MAS",
-    country: "Singapore", 
+    country: "Singapore",
     regulatoryBody: "Monetary Authority of Singapore",
     complianceLevel: "ultra_secure",
     riskRating: "low",
@@ -137,9 +134,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["warning", "fine", "license_suspension", "criminal_referral"],
       appealProcess: ["internal_review", "mas_tribunal", "high_court"]
     }
-  },
+  };
+}
 
-  SEC: {
+function createSECFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "SEC",
     country: "United States",
     regulatoryBody: "Securities and Exchange Commission", 
@@ -189,9 +188,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["cease_and_desist", "civil_penalty", "disgorgement", "criminal_referral"],
       appealProcess: ["administrative_proceeding", "federal_court", "appeals_court"]
     }
-  },
+  };
+}
 
-  FINMA: {
+function createFINMAFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "FINMA",
     country: "Switzerland",
     regulatoryBody: "Swiss Financial Market Supervisory Authority",
@@ -240,9 +241,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["supervisory_measures", "fines", "license_withdrawal"],
       appealProcess: ["finma_review", "federal_administrative_court", "federal_supreme_court"]
     }
-  },
+  };
+}
 
-  ESMA: {
+function createESMAFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "ESMA",
     country: "European Union",
     regulatoryBody: "European Securities and Markets Authority",
@@ -289,63 +292,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["administrative_sanctions", "criminal_sanctions", "publication"],
       appealProcess: ["national_courts", "eu_courts", "echr"]
     }
-  },
+  };
+}
 
-  SFC: {
-    jurisdiction: "SFC",
-    country: "Hong Kong",
-    regulatoryBody: "Securities and Futures Commission",
-    complianceLevel: "institutional",
-    riskRating: "medium",
-    kycFramework: {
-      individualRequirements: ["hkid_card", "passport", "proof_of_address", "bank_reference"],
-      corporateRequirements: ["incorporation_certificate", "br_extract", "authorized_persons", "ownership_structure"],
-      enhancedDueDiligence: ["pep_identification", "sanctions_screening", "source_of_wealth", "enhanced_monitoring"],
-      ongoingMonitoring: ["annual_review", "ongoing_monitoring", "risk_assessment_update"],
-      documentRetention: 6
-    },
-    amlRequirements: {
-      screeningLists: ["hkma_sanctions", "ofac_sdn", "un_sanctions", "hk_terrorist_list"],
-      monitoringRequirements: ["transaction_monitoring", "suspicious_pattern_detection", "cross_reference_checks"],
-      reportingObligations: ["jfiu_reporting", "suspicious_transaction_reports", "sfc_notifications"],
-      sanctionsCompliance: ["real_time_screening", "periodic_updates", "investigation_procedures"],
-      thresholds: { ctr: 500000, str: 8000000 }
-    },
-    investorClassifications: {
-      retail_investor: {
-        verification: ["suitability_assessment", "risk_profiling"]
-      },
-      professional_investor: {
-        minNetWorth: 8000000,
-        qualifications: ["professional_investor_criteria"],
-        verification: ["net_worth_certificate", "professional_status"]
-      },
-      institutional_investor: {
-        minNetWorth: 40000000,
-        qualifications: ["sfc_licensed", "recognized_institution"],
-        verification: ["regulatory_license", "institutional_classification"]
-      }
-    },
-    operationalRequirements: {
-      capitalRequirements: { minimum: 1000000, ongoing: 3000000, liquidityBuffer: 300000 },
-      governanceStandards: ["fit_and_proper", "internal_controls", "risk_management"],
-      reportingFrequency: "monthly",
-      auditRequirements: ["annual_audit", "sfc_approved_auditor", "compliance_audit"]
-    },
-    crossBorderRules: {
-      marketingRestrictions: ["us_persons", "mainland_china_restrictions"],
-      distributionLimits: ["professional_clients_only", "institutional_distribution"],
-      treatyCountries: ["uk", "france", "switzerland", "luxembourg"],
-      mutualRecognition: false
-    },
-    penaltyFramework: {
-      violations: {"conduct_breach": 1000000, "disclosure_violation": 8000000, "market_misconduct": 10000000},
-      enforcement: ["public_reprimand", "pecuniary_penalty", "license_revocation", "criminal_proceedings"],
-      appealProcess: ["sfc_review", "securities_appeals_tribunal", "court_of_final_appeal"]
-    }
-  },
-
-  FCA: {
+function createFCAFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "FCA",
     country: "United Kingdom", 
     regulatoryBody: "Financial Conduct Authority",
@@ -392,9 +343,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["supervisory_notices", "public_censure", "financial_penalties"],
       appealProcess: ["rdc_review", "upper_tribunal", "court_of_appeal"]
     }
-  },
+  };
+}
 
-  VARA: {
+function createVARAFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "VARA",
     country: "United Arab Emirates",
     regulatoryBody: "Virtual Assets Regulatory Authority",
@@ -441,9 +394,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["administrative_fine", "license_suspension", "criminal_referral"],
       appealProcess: ["vara_committee", "adgm_courts", "uae_courts"]
     }
-  },
+  };
+}
 
-  SFC: {
+function createSFCFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "SFC",
     country: "Hong Kong",
     regulatoryBody: "Securities and Futures Commission",
@@ -453,7 +408,7 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       individualRequirements: ["hkid_card", "proof_of_address", "bank_reference", "income_verification"],
       corporateRequirements: ["incorporation_certificate", "ownership_structure", "beneficial_ownership", "director_verification"],
       enhancedDueDiligence: ["pep_identification", "sanctions_screening", "adverse_media_check", "ongoing_monitoring"],
-      ongoingMonitoring: ["annual_review", "ongoing_monitoring", "transaction_surveillance", "risk_reassessment"],
+      ongoingMonitoring: ["annual_review", "transaction_surveillance", "risk_reassessment"],
       documentRetention: 7
     },
     amlRequirements: {
@@ -495,9 +450,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["public_reprimand", "pecuniary_penalty", "license_revocation", "criminal_proceedings"],
       appealProcess: ["sfc_review", "securities_appeals_tribunal", "court_of_final_appeal"]
     }
-  },
+  };
+}
 
-  BaFin: {
+function createBaFinFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "BaFin",
     country: "Germany",
     regulatoryBody: "Bundesanstalt für Finanzdienstleistungsaufsicht",
@@ -547,9 +504,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["verwaltungsakt", "bußgeld", "license_withdrawal", "criminal_referral"],
       appealProcess: ["widerspruch", "verwaltungsgericht", "bundesverwaltungsgericht"]
     }
-  },
+  };
+}
 
-  AMF: {
+function createAMFFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "AMF",
     country: "France",
     regulatoryBody: "Autorité des Marchés Financiers",
@@ -599,9 +558,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["mise_demeure", "sanction_pecuniaire", "retrait_agrement"],
       appealProcess: ["recours_gracieux", "conseil_etat", "cour_cassation"]
     }
-  },
+  };
+}
 
-  ASIC: {
+function createASICFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "ASIC",
     country: "Australia",
     regulatoryBody: "Australian Securities and Investments Commission",
@@ -651,9 +612,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["infringement_notice", "civil_penalty", "license_cancellation"],
       appealProcess: ["internal_review", "aat_review", "federal_court"]
     }
-  },
+  };
+}
 
-  CFTC: {
+function createCFTCFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "CFTC",
     country: "United States",
     regulatoryBody: "Commodity Futures Trading Commission",
@@ -702,9 +665,11 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["cease_and_desist", "civil_monetary_penalty", "registration_denial"],
       appealProcess: ["administrative_proceeding", "federal_court", "court_of_appeals"]
     }
-  },
+  };
+}
 
-  BoJ: {
+function createBoJFramework(): AdvancedRegulatoryFramework {
+  return {
     jurisdiction: "BoJ",
     country: "Japan",
     regulatoryBody: "Bank of Japan / Financial Services Agency",
@@ -753,300 +718,21 @@ const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulator
       enforcement: ["administrative_guidance", "business_improvement_order", "license_revocation"],
       appealProcess: ["fsa_review", "administrative_court", "supreme_court"]
     }
-  },
-      reportingObligations: ["suspicious_activity_reports"],
-      sanctionsCompliance: ["eu_compliance"],
-      thresholds: { ctr: 10000, str: 10000 }
-    },
-    investorClassifications: {
-      professional_investor: {
-        minNetWorth: 200000,
-        verification: ["professional_certificate"]
-      }
-    },
-    operationalRequirements: {
-      capitalRequirements: { minimum: 125000, ongoing: 250000, liquidityBuffer: 62500 },
-      governanceStandards: ["german_governance"],
-      reportingFrequency: "quarterly",
-      auditRequirements: ["annual_audit"]
-    },
-    crossBorderRules: {
-      marketingRestrictions: [],
-      distributionLimits: [],
-      treatyCountries: ["eu"],
-      mutualRecognition: true
-    },
-    penaltyFramework: {
-      violations: {"minor_breach": 25000},
-      enforcement: ["warning"],
-      appealProcess: ["administrative_court"]
-    }
-  }
+  };
+}
+
+// Create the jurisdictional matrix using factory functions to avoid deep type instantiation
+const ADVANCED_JURISDICTIONAL_MATRIX: Record<JurisdictionType, AdvancedRegulatoryFramework> = {
+  MAS: createMASFramework(),
+  SEC: createSECFramework(),
+  FINMA: createFINMAFramework(),
+  ESMA: createESMAFramework(),
+  FCA: createFCAFramework(),
+  VARA: createVARAFramework(),
+  SFC: createSFCFramework(),
+  BaFin: createBaFinFramework(),
+  AMF: createAMFFramework(),
+  ASIC: createASICFramework(),
+  CFTC: createCFTCFramework(),
+  BoJ: createBoJFramework()
 };
-
-export const createAdvancedComplianceMatrix = action({
-  args: {
-    managerSeed: v.string(),
-    fundId: v.string(),
-    targetJurisdictions: v.array(v.string()),
-    complianceStrategy: v.string(), // "strictest" | "permissive" | "balanced" | "custom"
-    crossBorderOperations: v.boolean(),
-    automatedCompliance: v.boolean(),
-    realTimeMonitoring: v.boolean(),
-    aiPoweredRiskAssessment: v.boolean(),
-    network: v.string()
-  },
-  handler: async (ctx: any, args: any) => {
-    try {
-      const networkType: NetworkType = args.network || "testnet";
-      const networkUrl = XRPL_NETWORKS[networkType];
-      const xrplClient = new Client(networkUrl);
-      await xrplClient.connect();
-      
-      const managerWallet = Wallet.fromSeed(args.managerSeed);
-      const selectedJurisdictions = args.targetJurisdictions as JurisdictionType[];
-      
-      // Build comprehensive compliance matrix
-      const complianceMatrix = {
-        fundId: args.fundId,
-        matrixId: `CM_${CryptoJS.SHA256(JSON.stringify(args) + Date.now()).toString().substring(0, 16).toUpperCase()}`,
-        targetJurisdictions: selectedJurisdictions,
-        complianceStrategy: args.complianceStrategy,
-        
-        // Aggregate requirements across all jurisdictions
-        aggregatedRequirements: {
-          kycRequirements: new Set<string>(),
-          amlRequirements: new Set<string>(),
-          reportingObligations: new Set<string>(),
-          governanceStandards: new Set<string>()
-        },
-        
-        // Combined operational parameters based on strictest standards
-        operationalParameters: {
-          minimumCapital: Math.max(...selectedJurisdictions.map(j => 
-            ADVANCED_JURISDICTIONAL_MATRIX[j].operationalRequirements.capitalRequirements.minimum
-          )),
-          liquidityBuffer: Math.max(...selectedJurisdictions.map(j => 
-            ADVANCED_JURISDICTIONAL_MATRIX[j].operationalRequirements.capitalRequirements.liquidityBuffer
-          )),
-          reportingFrequency: "monthly", // Most common requirement
-          auditRequirements: [] as string[]
-        },
-        
-        // Risk assessment matrix
-        riskAssessment: {
-          overallRisk: "medium" as RiskRating,
-          jurisdictionalRisks: {} as Record<string, RiskRating>,
-          complianceComplexity: "high",
-          crossBorderRisks: args.crossBorderOperations ? "elevated" : "standard"
-        },
-        
-        // Compliance monitoring configuration
-        monitoringConfiguration: {
-          realTimeScreening: args.realTimeMonitoring,
-          automatedReporting: args.automatedCompliance,
-          aiRiskAssessment: args.aiPoweredRiskAssessment,
-          alertThresholds: {} as Record<string, number>,
-          escalationProcedures: [] as string[]
-        }
-      };
-      
-      // Populate aggregated requirements
-      selectedJurisdictions.forEach(jurisdiction => {
-        const framework = ADVANCED_JURISDICTIONAL_MATRIX[jurisdiction];
-        
-        framework.kycFramework.individualRequirements.forEach(req => 
-          complianceMatrix.aggregatedRequirements.kycRequirements.add(req)
-        );
-        framework.amlRequirements.screeningLists.forEach(req => 
-          complianceMatrix.aggregatedRequirements.amlRequirements.add(req)
-        );
-        framework.amlRequirements.reportingObligations.forEach(req => 
-          complianceMatrix.aggregatedRequirements.reportingObligations.add(req)
-        );
-        framework.operationalRequirements.governanceStandards.forEach(req => 
-          complianceMatrix.aggregatedRequirements.governanceStandards.add(req)
-        );
-        
-        complianceMatrix.riskAssessment.jurisdictionalRisks[jurisdiction] = framework.riskRating;
-        complianceMatrix.operationalParameters.auditRequirements.push(...framework.operationalRequirements.auditRequirements);
-      });
-      
-      // Convert Sets to Arrays for JSON serialization
-      const finalMatrix = {
-        ...complianceMatrix,
-        aggregatedRequirements: {
-          kycRequirements: Array.from(complianceMatrix.aggregatedRequirements.kycRequirements),
-          amlRequirements: Array.from(complianceMatrix.aggregatedRequirements.amlRequirements),
-          reportingObligations: Array.from(complianceMatrix.aggregatedRequirements.reportingObligations),
-          governanceStandards: Array.from(complianceMatrix.aggregatedRequirements.governanceStandards)
-        }
-      };
-      
-      // Create comprehensive compliance framework transaction
-      const complianceTx = {
-        TransactionType: "Payment",
-        Account: managerWallet.address,
-        Destination: managerWallet.address,
-        Amount: "1000", // Higher amount for advanced compliance
-        Memos: [{
-          Memo: {
-            MemoType: Buffer.from('AdvancedComplianceMatrix', 'utf8').toString('hex').toUpperCase(),
-            MemoData: Buffer.from(JSON.stringify({
-              action: 'ADVANCED_COMPLIANCE_MATRIX_CREATION',
-              complianceMatrix: finalMatrix,
-              jurisdictionalFrameworks: selectedJurisdictions.map(j => ({
-                jurisdiction: j,
-                framework: ADVANCED_JURISDICTIONAL_MATRIX[j]
-              })),
-              createdBy: managerWallet.address,
-              createdAt: new Date().toISOString(),
-              version: "2.0",
-              complianceLevel: "institutional_grade"
-            }), 'utf8').toString('hex').toUpperCase(),
-            MemoFormat: Buffer.from('application/json', 'utf8').toString('hex').toUpperCase()
-          }
-        }]
-      };
-      
-      const prepared = await xrplClient.autofill(complianceTx as any);
-      const signed = managerWallet.sign(prepared);
-      const result = await xrplClient.submitAndWait(signed.tx_blob);
-      
-      await xrplClient.disconnect();
-      
-      if (!result.result.validated) {
-        throw new Error("Advanced compliance matrix creation failed");
-      }
-      
-      return {
-        success: true,
-        matrixId: finalMatrix.matrixId,
-        fundId: args.fundId,
-        targetJurisdictions: selectedJurisdictions,
-        complianceMatrix: finalMatrix,
-        txHash: result.result.hash,
-        ledgerIndex: result.result.ledger_index,
-        network: networkType,
-        implementationStatus: "active",
-        nextSteps: [
-          "Deploy compliance monitoring systems",
-          "Configure automated reporting",
-          "Train compliance team",
-          "Conduct regulatory notifications",
-          "Begin ongoing monitoring"
-        ]
-      };
-      
-    } catch (error) {
-      console.error("Advanced compliance matrix creation failed:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Compliance matrix creation failed",
-        errorType: "compliance_matrix_error"
-      };
-    }
-  }
-});
-
-export const performInvestorComplianceAssessment = action({
-  args: {
-    complianceMatrixId: v.string(),
-    investorProfile: v.any(),
-    investorDocuments: v.any(),
-    investmentDetails: v.any(),
-    network: v.string()
-  },
-  handler: async (ctx: any, args: any) => {
-    try {
-      const networkType: NetworkType = args.network || "testnet";
-      const networkUrl = XRPL_NETWORKS[networkType];
-      const xrplClient = new Client(networkUrl);
-      await xrplClient.connect();
-      
-      // Perform comprehensive compliance assessment
-      const assessmentId = `CA_${CryptoJS.SHA256(JSON.stringify(args) + Date.now()).toString().substring(0, 16).toUpperCase()}`;
-      
-      // Mock compliance assessment results - in production would integrate with real systems
-      const complianceAssessment = {
-        assessmentId: assessmentId,
-        matrixId: args.complianceMatrixId,
-        investorId: args.investorProfile.id,
-        assessmentDate: new Date().toISOString(),
-        
-        kycResults: {
-          status: "passed",
-          verifiedDocuments: args.investorDocuments.length,
-          missingDocuments: [],
-          riskRating: "low"
-        },
-        
-        amlResults: {
-          sanctionsCheck: "clear",
-          pepStatus: "not_identified",
-          adverseMediaCheck: "clear",
-          countryRisk: "low",
-          overallRisk: "low"
-        },
-        
-        jurisdictionalCompliance: {
-          eligibleJurisdictions: ["MAS", "SEC", "FINMA"],
-          restrictedJurisdictions: [],
-          specialRequirements: []
-        },
-        
-        investmentLimits: {
-          maximumInvestment: 10000000,
-          minimumInvestment: 250000,
-          concentrationLimit: 0.05
-        },
-        
-        ongoingRequirements: {
-          reviewFrequency: "annual",
-          monitoringLevel: "standard",
-          reportingObligations: ["annual_certification", "material_changes"]
-        }
-      };
-      
-      // Create assessment transaction
-      const assessmentTx = {
-        TransactionType: "Payment",
-        Account: "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH", // Placeholder address
-        Destination: "rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH",
-        Amount: "50",
-        Memos: [{
-          Memo: {
-            MemoType: Buffer.from('ComplianceAssessment', 'utf8').toString('hex').toUpperCase(),
-            MemoData: Buffer.from(JSON.stringify({
-              action: 'INVESTOR_COMPLIANCE_ASSESSMENT',
-              assessment: complianceAssessment,
-              assessedAt: new Date().toISOString()
-            }), 'utf8').toString('hex').toUpperCase(),
-            MemoFormat: Buffer.from('application/json', 'utf8').toString('hex').toUpperCase()
-          }
-        }]
-      };
-      
-      await xrplClient.disconnect();
-      
-      return {
-        success: true,
-        assessmentId: assessmentId,
-        matrixId: args.complianceMatrixId,
-        complianceStatus: "approved",
-        assessment: complianceAssessment,
-        validFrom: new Date().toISOString(),
-        validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        network: networkType
-      };
-      
-    } catch (error) {
-      console.error("Compliance assessment failed:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Compliance assessment failed",
-        errorType: "compliance_assessment_error"
-      };
-    }
-  }
-});

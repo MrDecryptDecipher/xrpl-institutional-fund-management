@@ -1,0 +1,496 @@
+[
+  {
+    "id": "TC001",
+    "title": "Investor Registration and KYC/AML Verification",
+    "description": "Verify that an investor can successfully register and complete KYC/AML verification, obtaining credentials linked to a Decentralized Identity (DID).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to investor registration page"
+      },
+      {
+        "type": "action",
+        "description": "Submit valid personal and institutional details"
+      },
+      {
+        "type": "action",
+        "description": "Complete KYC/AML verification process"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that credentials are issued and linked to a valid DID on ledger"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that no PII is stored on-chain and identity is privacy-preserving"
+      },
+      {
+        "type": "action",
+        "description": "Attempt registration with invalid or incomplete data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration rejection and appropriate error messages"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Permissioned Domain Access Enforcement",
+    "description": "Ensure that actions in the protocol are restricted based on credential and jurisdictional rules enforced by XLS-80 permissioned domain.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt a fund subscription with valid credentials matching allowed jurisdiction"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription succeeds"
+      },
+      {
+        "type": "action",
+        "description": "Attempt fund subscription with credentials from disallowed jurisdiction"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the transaction is blocked with appropriate compliance violation message"
+      },
+      {
+        "type": "action",
+        "description": "Attempt token transfer with revoked or expired credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify transfer is rejected and logged"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Multi-Purpose Token (MPT) Standard Compliance",
+    "description": "Test MPT token functionalities including configurable supply, transfer fees, authorized holders, and clawbacks function in compliance with XRPL standards.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create MPT token with configured supply and fees"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm token creation on ledger with correct parameters"
+      },
+      {
+        "type": "action",
+        "description": "Transfer tokens between authorized holders paying transfer fees"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify fees are deducted and balances updated correctly"
+      },
+      {
+        "type": "action",
+        "description": "Attempt transfer from unauthorized holder"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm transfer is rejected"
+      },
+      {
+        "type": "action",
+        "description": "Execute clawback on tokens from a holder flagged by compliance"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify clawback succeeds and tokens are returned to issuer"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Fund Lifecycle Management",
+    "description": "Validate fund creation, issuance, subscriptions, redemptions, transfers, and compliance-checked transactions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new institutional fund with token issuance"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm fund and token appear correctly on ledger and in the dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Investor with valid credentials subscribes to fund shares"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subscription transaction passes compliance checks and shares are issued"
+      },
+      {
+        "type": "action",
+        "description": "Investor redeems fund shares"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify redemption processes correctly with compliance validation and share burn"
+      },
+      {
+        "type": "action",
+        "description": "Attempt fund subscription without valid credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Expect rejection due to failed compliance"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "XRPL Decentralized Exchange (DEX) and AMM Trading with Compliance",
+    "description": "Test authorized investors trading MPT tokens on XRPL DEX and permissioned AMM liquidity pools enforcing real-time compliance.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Investor with valid credentials trades tokens on XRPL DEX"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify trade executes successfully and on-chain logs record compliance status"
+      },
+      {
+        "type": "action",
+        "description": "Investor participates in permissioned AMM liquidity pool"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify liquidity provision and share token distribution with compliance checks"
+      },
+      {
+        "type": "action",
+        "description": "Investor with revoked credentials attempts trade"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify trade is denied with compliance breach notification"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Lending Protocol with Credentialed Pooled Lending",
+    "description": "Validate lending pool operations including authorized borrowers and depositors, tracking repayments, defaults, and interest on-chain.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a lending pool with credentialed access"
+      },
+      {
+        "type": "action",
+        "description": "Authorized borrower submits loan request"
+      },
+      {
+        "type": "assertion",
+        "description": "Loan approval is granted after compliance and risk assessment"
+      },
+      {
+        "type": "action",
+        "description": "Depositor invests into lending pool"
+      },
+      {
+        "type": "assertion",
+        "description": "Depositor balance and pooled fund amounts update correctly"
+      },
+      {
+        "type": "action",
+        "description": "Track repayments and interest accruals on-chain"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure repayment status and defaults are accurately reflected"
+      },
+      {
+        "type": "action",
+        "description": "Attempt loan request from unauthorized or non-credentialed user"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm loan request is rejected"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Compliance and Risk Management Enforcement",
+    "description": "Validate that all transactions pass real-time compliance checks enforcing multi-jurisdictional regulations and that breach actions (revocation, clawback) trigger correctly.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit a mint transaction for fund tokens with valid credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Transaction is approved and logged with compliance metadata"
+      },
+      {
+        "type": "action",
+        "description": "Submit a transfer transaction violating AML rules"
+      },
+      {
+        "type": "assertion",
+        "description": "Transaction is blocked and compliance agent revokes user credential"
+      },
+      {
+        "type": "assertion",
+        "description": "Clawback of tokens flagged for suspicious activity is executed and logged"
+      },
+      {
+        "type": "action",
+        "description": "Attempt any transaction for revoked credential user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify denial with compliance breach reason"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Governance via Multi-Signature Control and Upgradeable Contracts",
+    "description": "Test governance processes including proposal submission, multi-sig confirmations, voting, upgrades, and audit log capture.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit governance proposal by authorized participant"
+      },
+      {
+        "type": "assertion",
+        "description": "Proposal is recorded and visible to all governance participants"
+      },
+      {
+        "type": "action",
+        "description": "Perform multi-signature approval process for a contract upgrade"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upgrade is executed only after all required signatures"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that all multisig actions and parameter changes are logged immutably on-chain"
+      },
+      {
+        "type": "action",
+        "description": "Attempt upgrade with insufficient signatures"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm upgrade is rejected and no changes occur"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Security Protocols: HSM/MPC Key Management and Formal Verification of Hooks",
+    "description": "Ensure security mechanisms including key management integration, formal verification of Hooks, and pre-deployment security audits.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Integrate HSM/MPC key management for critical signing operations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify keys are never exposed and signing operates correctly"
+      },
+      {
+        "type": "action",
+        "description": "Deploy Hooks only after formal verification process completes successfully"
+      },
+      {
+        "type": "assertion",
+        "description": "Hooks pass security audits and operate as intended under stress test"
+      },
+      {
+        "type": "action",
+        "description": "Attempt deployment of unverified or failing Hooks"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm deployment is blocked with relevant error"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Cross-Chain Bridge and Oracle Integration Integrity",
+    "description": "Test secure asset transfer across chains via the bridge and validate reliable oracle price feeds meeting protocol mandates.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Initiate asset transfer from XRPL to an EVM chain via bridge"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify transaction integrity and successful asset receipt on target chain"
+      },
+      {
+        "type": "action",
+        "description": "Fetch asset price from oracle"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify accuracy, freshness, and secure delivery of price data"
+      },
+      {
+        "type": "action",
+        "description": "Simulate failure or incorrect oracle data feed"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm safeguards trigger rejecting suspicious data and prevent incorrect transactions"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Developer SDKs and API Coverage",
+    "description": "Validate all core protocol features are exposed via SDKs and APIs with WebSocket, REST, and CLI interfaces supporting institutional workflows.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Invoke APIs to list funds, create funds, and query investor portfolios"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure correct responses with relevant data and error handling"
+      },
+      {
+        "type": "action",
+        "description": "Use WebSocket for real-time transaction monitoring"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify timely and reliable event notifications"
+      },
+      {
+        "type": "action",
+        "description": "Execute commands through CLI client for fund and compliance operations"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm commands produce expected results and error messages"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Analytics and Real-Time Reporting Dashboard Accuracy",
+    "description": "Test analytics dashboards show correct real-time and aggregated on-chain/off-chain data for funds, investors, and compliance status.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Generate multiple transactions affecting fund performance and portfolio analytics"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify dashboards update in real-time reflecting correct AUM, NAV, risk metrics, and compliance reports"
+      },
+      {
+        "type": "action",
+        "description": "Inject edge cases such as compliance breaches or rapid trading events"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure reporting handles anomalies correctly and alerts are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Audit Logs and Immutable Ledger Evidence Verification",
+    "description": "Verify immutable on-chain audit logs capture credential issuance, verification, revocation, transactions, compliance decisions, and governance actions.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform credential issuance and link to DID"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm immutable ledger evidence is recorded and accessible"
+      },
+      {
+        "type": "action",
+        "description": "Conduct transactions and governance actions with multisig confirmations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all events are logged chronologically and tamper-proof"
+      },
+      {
+        "type": "action",
+        "description": "Request audit logs filtered by entity type"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure logs are complete, consistent, and include compliance and security metadata"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Error Handling and Edge Case Transactions",
+    "description": "Test system behavior under invalid inputs, partial failures, revoked credentials, expired tokens, and unexpected network conditions.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit transactions with invalid or missing parameters"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system rejects with clear error messages"
+      },
+      {
+        "type": "action",
+        "description": "Attempt operations with expired or revoked user credentials"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm all operations are denied and logged as security events"
+      },
+      {
+        "type": "action",
+        "description": "Simulate network latency or chain reorgs during critical transactions"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure transactions either succeed or fail consistently without partial state corruption"
+      }
+    ]
+  }
+]

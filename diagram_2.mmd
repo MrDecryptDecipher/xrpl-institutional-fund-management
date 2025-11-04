@@ -1,0 +1,73 @@
+graph LR
+    subgraph External["🌐 External Layer"]
+        A[Internet]
+        B[Users]
+        C[Attackers]
+    end
+
+    subgraph Perimeter["🛡️ Perimeter Security"]
+        D[WAF]
+        E[DDoS Protection]
+        F[Rate Limiting]
+    end
+
+    subgraph AppSec["🔐 Application Security"]
+        G[API Gateway]
+        H[Authentication]
+        I[Authorization]
+        J[Input Validation]
+    end
+
+    subgraph Logic["⚙️ Business Logic"]
+        K[Convex Functions]
+        L[Compliance Engine]
+        M[Risk Engine]
+    end
+
+    subgraph DataSec["💾 Data Security"]
+        N[Encryption]
+        O[Database]
+        P[XRPL Integration]
+    end
+
+    subgraph Keys["🔑 Key Management"]
+        Q[HSM/MPC]
+        R[Key Vault]
+        S[Multi-Sig Wallets]
+    end
+
+    subgraph Monitor["📊 Monitoring"]
+        T[SIEM]
+        U[IDS]
+        V[Incident Response]
+    end
+
+    B --> D
+    C --> E
+    D --> G
+    E --> G
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    M --> N
+    N --> O
+    N --> P
+    P --> Q
+    Q --> R
+    R --> S
+    O --> T
+    P --> T
+    T --> U
+    U --> V
+
+    style External fill:#e1f5ff
+    style Perimeter fill:#fff4e1
+    style AppSec fill:#ffe1f5
+    style Logic fill:#e1ffe1
+    style DataSec fill:#f5e1ff
+    style Keys fill:#ffe1e1
+    style Monitor fill:#e1ffff

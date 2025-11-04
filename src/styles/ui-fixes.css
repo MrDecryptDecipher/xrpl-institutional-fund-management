@@ -1,0 +1,83 @@
+/* UI Visibility Fixes for XRPL Institutional Fund Management Protocol */
+
+/* Fix washed out white backgrounds - make them more opaque */
+.bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+}
+
+/* Fix specific card backgrounds */
+.rounded-2xl.bg-white\/80,
+.rounded-xl.bg-white\/80,
+.rounded-lg.bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+}
+
+/* Ensure text colors are dark enough */
+.text-gray-900 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.text-gray-800 {
+  color: rgb(31, 41, 55) !important;
+}
+
+.text-gray-700 {
+  color: rgb(55, 65, 81) !important;
+}
+
+.text-gray-600 {
+  color: rgb(75, 85, 99) !important;
+}
+
+.text-gray-500 {
+  color: rgb(107, 114, 128) !important;
+}
+
+/* Fix borders to be more visible */
+.border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.border-gray-200 {
+  border-color: rgb(229, 231, 235) !important;
+}
+
+/* Ensure shadows are visible */
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Fix gradient backgrounds */
+.bg-gradient-to-br {
+  opacity: 1 !important;
+}
+
+.from-blue-50 {
+  --tw-gradient-from: rgb(239, 246, 255) !important;
+}
+
+.to-indigo-50 {
+  --tw-gradient-to: rgb(238, 242, 255) !important;
+}
+
+.from-green-50 {
+  --tw-gradient-from: rgb(240, 253, 244) !important;
+}
+
+.to-teal-50 {
+  --tw-gradient-to: rgb(240, 253, 250) !important;
+}
+
+/* Ensure backdrop blur doesn't wash out content */
+.backdrop-blur-xl {
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}

@@ -13,15 +13,18 @@ import {
   X,
   Plus,
   Minus,
-  Info
+  Info,
+  Wallet,
+  Coins
 } from "lucide-react";
 
 interface InstitutionalFundCreatorProps {
   onClose: () => void;
   onSuccess?: (fundId: string) => void;
+  xrplAccount?: string | null;
 }
 
-export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFundCreatorProps) {
+export function InstitutionalFundCreator({ onClose, onSuccess, xrplAccount }: InstitutionalFundCreatorProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     // Basic Information
@@ -98,11 +101,29 @@ export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFu
       primebroker: "",
       legalCounsel: "",
       complianceOfficer: ""
+    },
+    
+    // MPT Token Settings
+    mptSettings: {
+      totalSupply: "1000000000", // 1 billion tokens
+      decimals: 6,
+      transferFee: 0,
+      flags: {
+        canLock: false,
+        requireAuth: true,
+        canEscrow: true,
+        canTrade: true,
+        transferable: true,
+        canClawback: true
+      }
     }
   });
 
   const createFund = useMutation(api.funds.institutional_management.createInstitutionalFund);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingMPT, setIsCreatingMPT] = useState(false);
+  const [mptId, setMptId] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
 
   const steps = [
     { id: 1, title: "Basic Information", icon: Building2 },
@@ -110,7 +131,8 @@ export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFu
     { id: 3, title: "Terms & Fees", icon: FileText },
     { id: 4, title: "Compliance", icon: Shield },
     { id: 5, title: "Risk Management", icon: AlertTriangle },
-    { id: 6, title: "Operational Setup", icon: Settings }
+    { id: 6, title: "Operational Setup", icon: Settings },
+    { id: 7, title: "Token Settings", icon: Coins }
   ];
 
   const fundTypes = [
@@ -152,6 +174,54 @@ export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFu
   const auditStandards = [
     "US GAAP", "IFRS", "AIFMD", "UCITS", "Sarbanes-Oxley", "Basel III"
   ];
+
+  // Function to create MPT token on XRPL Testnet
+  const createMPTToken = async () => {
+    if (!xrplAccount) {
+      alert("Please connect your Xaman wallet first");
+      return;
+    }
+    
+    setIsCreatingMPT(true);
+    try {
+      // Call the backend to prepare the MPT token creation
+      const response = await fetch('/api/create-mpt-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          issuerSeed: "YOUR_ISSUER_SEED", // In a real implementation, this would be securely provided
+          metadata: {
+            name: formData.name,
+            symbol: formData.symbol,
+            description: formData.description,
+            totalSupply: formData.mptSettings.totalSupply,
+            decimals: formData.mptSettings.decimals,
+            uri: `https://institutionalfund.xrpl.org/token/${formData.symbol}`
+          },
+          transferFee: formData.mptSettings.transferFee,
+          flags: formData.mptSettings.flags
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setMptId(result.mptId);
+        setTxHash(result.txHash);
+        
+        alert(`MPT Token created successfully!\nToken ID: ${result.mptId}\nTransaction Hash: ${result.txHash}\nView on Testnet Explorer: ${result.explorerUrl}`);
+      } else {
+        throw new Error(result.error || 'Failed to create MPT token');
+      }
+    } catch (error) {
+      console.error("Failed to create MPT token:", error);
+      alert(`Failed to create MPT token: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+    } finally {
+      setIsCreatingMPT(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -914,6 +984,220 @@ export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFu
           </div>
         );
 
+      case 7:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Total Supply *
+                </label>
+                <input
+                  type="number"
+                  value={formData.mptSettings.totalSupply}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    mptSettings: { ...formData.mptSettings, totalSupply: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., 1000000000"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Decimals *
+                </label>
+                <input
+                  type="number"
+                  value={formData.mptSettings.decimals}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    mptSettings: { ...formData.mptSettings, decimals: parseInt(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., 6"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Transfer Fee (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={formData.mptSettings.transferFee}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    mptSettings: { ...formData.mptSettings, transferFee: parseFloat(e.target.value) || 0 }
+                  })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-medium text-gray-900 mb-4">Token Flags</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="canLock"
+                    checked={formData.mptSettings.flags.canLock}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          canLock: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="canLock" className="ml-2 text-sm text-gray-700">
+                    Can Lock
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="requireAuth"
+                    checked={formData.mptSettings.flags.requireAuth}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          requireAuth: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="requireAuth" className="ml-2 text-sm text-gray-700">
+                    Require Auth
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="canEscrow"
+                    checked={formData.mptSettings.flags.canEscrow}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          canEscrow: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="canEscrow" className="ml-2 text-sm text-gray-700">
+                    Can Escrow
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="canTrade"
+                    checked={formData.mptSettings.flags.canTrade}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          canTrade: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="canTrade" className="ml-2 text-sm text-gray-700">
+                    Can Trade
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="transferable"
+                    checked={formData.mptSettings.flags.transferable}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          transferable: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="transferable" className="ml-2 text-sm text-gray-700">
+                    Transferable
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="canClawback"
+                    checked={formData.mptSettings.flags.canClawback}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      mptSettings: {
+                        ...formData.mptSettings,
+                        flags: {
+                          ...formData.mptSettings.flags,
+                          canClawback: e.target.checked
+                        }
+                      }
+                    })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="canClawback" className="ml-2 text-sm text-gray-700">
+                    Can Clawback
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center mt-6">
+              <button
+                onClick={createMPTToken}
+                disabled={isCreatingMPT}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {isCreatingMPT ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Creating Token...</span>
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="h-4 w-4" />
+                    <span>Create MPT Token</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -933,6 +1217,8 @@ export function InstitutionalFundCreator({ onClose, onSuccess }: InstitutionalFu
         return formData.riskManagement.var95 > 0 && formData.riskManagement.maxDrawdown > 0;
       case 6:
         return formData.operationalSetup.administrator && formData.operationalSetup.custodian && formData.operationalSetup.legalCounsel && formData.operationalSetup.complianceOfficer;
+      case 7:
+        return parseInt(formData.mptSettings.totalSupply) > 0 && formData.mptSettings.decimals >= 0;
       default:
         return false;
     }
