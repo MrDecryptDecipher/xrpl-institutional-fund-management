@@ -7,43 +7,47 @@
 
 ## 🚀 Overview
 
-The **XRPL Institutional Fund Management Protocol** is a comprehensive, institutional-grade platform designed to bridge traditional finance (TradFi) with decentralized finance (DeFi) on the XRP Ledger. It enables asset managers to create, manage, and distribute tokenized funds with built-in compliance, automated reporting, and seamless settlement.
+The **XRPL Institutional Fund Management Protocol** is a state-of-the-art financial infrastructure designed to bridge the gap between Traditional Finance (TradFi) and Decentralized Finance (DeFi). Built on the **XRP Ledger (XRPL)**, it empowers asset managers to launch, manage, and settle tokenized funds with institutional-grade compliance, security, and efficiency.
 
-This platform leverages the latest XRPL amendments including **XLS-33 (Multi-Purpose Tokens)**, **XLS-40 (DID)**, **XLS-65 (Lending Protocol)**, and **XLS-80 (Permissioned Domains)** to provide a secure and regulatory-compliant environment for institutional capital.
+Unlike standard DeFi protocols, this system is built from the ground up for **regulated markets**, leveraging specific XRPL amendments to ensure every transaction is compliant, every identity is verified, and every asset is secure.
+
+### 🌟 Key Value Propositions
+
+*   **Regulatory Compliance First**: Built-in automated KYC/AML checks using **XLS-80 (Permissioned Domains)** and **XLS-40 (DID)** ensure that only verified counterparties can hold or trade fund tokens.
+*   **Institutional Lending**: Integrated **XLS-65 (Native Lending Protocol)** allows funds to securely lend assets or borrow against collateral without intermediaries.
+*   **Real-Time Settlement**: Leveraging XRPL's 3-second ledger close time for near-instant subscription and redemption settlement.
+*   **Reactive Architecture**: Powered by **Convex**, the backend provides real-time state synchronization between the blockchain and the user interface, eliminating stale data.
 
 ---
 
 ## 🏗️ System Architecture
 
-The system is built on a modern stack utilizing React for the frontend, Convex for the reactive backend, and the XRP Ledger for settlement and asset management.
+The architecture follows a reactive, event-driven pattern. The **Convex** backend acts as the synchronization layer between the deterministic **XRP Ledger** and the dynamic **React** frontend.
 
 ```mermaid
 graph TD
-    %% Styles
-    classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000;
-    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
-    classDef ledger fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#000;
-    classDef external fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000;
+    %% Theme: Institutional Navy & White
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef ledger fill:#1B5E20,stroke:#000,stroke-width:2px,color:#fff;
+    classDef external fill:#4A148C,stroke:#000,stroke-width:2px,color:#fff;
 
     subgraph "Frontend Layer"
-        UI[React UI / Vite]:::frontend
-        Auth[Xaman Wallet Auth]:::frontend
-        Hooks[Custom React Hooks]:::frontend
-        State[Global State / Context]:::frontend
+        UI[React UI / Vite]:::primary
+        Auth[Xaman Wallet Auth]:::secondary
+        Hooks[Custom React Hooks]:::secondary
     end
 
     subgraph "Backend Layer (Convex)"
-        API[Public API Gateway]:::backend
-        Functions[Query & Mutation Functions]:::backend
-        Scheduler[Cron Jobs & Schedulers]:::backend
-        DB[(Convex Database)]:::backend
-        AuthService[Auth Service]:::backend
+        API[Public API Gateway]:::primary
+        Functions[Query & Mutation Functions]:::secondary
+        Scheduler[Cron Jobs]:::secondary
+        DB[(Convex Database)]:::primary
     end
 
     subgraph "Blockchain Layer (XRPL)"
         Node[XRPL Public Node]:::ledger
-        Ledger[XRP Ledger Mainnet/Testnet]:::ledger
-        DEX[Decentralized Exchange]:::ledger
+        Ledger[XRP Ledger]:::ledger
         AMEND[Amendments: XLS-33, 40, 65, 80]:::ledger
     end
 
@@ -52,19 +56,17 @@ graph TD
         Oracle[Price Oracles]:::external
     end
 
-    UI <-->|WebSocket/HTTP| API
-    Auth <-->|Sign/Verify| UI
+    UI <-->|WebSocket| API
+    Auth <-->|Sign| UI
     UI --> Hooks
     Hooks --> API
     
     API <--> Functions
     Functions <--> DB
-    Functions <--> AuthService
     Functions <-->|xrpl.js| Node
     
     Node <--> Ledger
     Ledger --- AMEND
-    Ledger <--> DEX
     
     Scheduler -->|Polls| Node
     Functions -->|Verify| KYC
@@ -75,7 +77,7 @@ graph TD
 
 ## 💾 Database Schema (ERD)
 
-The data model is designed to handle complex relationships between funds, investors, and assets while maintaining strict compliance records.
+Our data model bridges off-chain metadata with on-chain state. While the XRPL is the source of truth for balances, Convex stores rich metadata, compliance records, and historical performance data.
 
 ```mermaid
 erDiagram
@@ -84,114 +86,82 @@ erDiagram
         string fullName
         string email
         string xrplAccount
-        string networkPreference
-        string xamanUserToken
+        string kycLevel
     }
 
     FUNDS {
         string name
         string symbol
-        string fundType
         string status
         float aum
-        string xrplAccount
         string mptTokenId
         string domainId
-        object complianceRules
     }
 
     INVESTORS {
         string investorType
-        string kycStatus
-        string amlStatus
         string jurisdiction
-        boolean accreditedStatus
+        boolean accredited
         string didDocument
-    }
-
-    HOLDINGS {
-        float shareTokens
-        float costBasis
-        float currentValue
-        float unrealizedGainLoss
-        string status
     }
 
     ASSETS {
         string symbol
-        string assetType
+        string type
         float quantity
-        float currentValue
+        float value
         string isin
-        string mptTokenId
     }
 
     TRANSACTIONS {
         string type
         float amount
-        float shareTokens
         string status
-        string xrplTxHash
-        object complianceChecks
-    }
-
-    COMPLIANCE_REPORTS {
-        string reportType
-        string jurisdiction
-        string status
-        string reportHash
+        string txHash
     }
 
     %% Relationships
     USERS ||--o{ FUNDS : "manages"
-    USERS ||--o{ INVESTORS : "is associated with"
-    FUNDS ||--o{ HOLDINGS : "has"
-    INVESTORS ||--o{ HOLDINGS : "owns"
-    FUNDS ||--o{ ASSETS : "contains"
-    FUNDS ||--o{ TRANSACTIONS : "records"
+    USERS ||--o{ INVESTORS : "identity"
+    FUNDS ||--o{ ASSETS : "holds"
+    FUNDS ||--o{ TRANSACTIONS : "executes"
     INVESTORS ||--o{ TRANSACTIONS : "initiates"
-    FUNDS ||--o{ COMPLIANCE_REPORTS : "generates"
-    ASSETS }|--|| FUNDS : "belongs to"
 ```
 
 ---
 
 ## 🔐 Authentication Flow
 
-Secure authentication using Xaman (formerly Xumm) Wallet ensures that all actions are cryptographically signed by the user's XRPL account.
+We utilize **Xaman (formerly Xumm)** for non-custodial authentication. This ensures that the platform never holds user keys. Authentication is a cryptographic handshake proving ownership of an XRPL account.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant User
-    participant UI as Frontend (React)
+    participant UI as Frontend
     participant Xaman as Xaman Wallet
-    participant API as Convex Backend
-    participant DB as Database
+    participant API as Backend
 
-    rect rgb(230, 240, 255)
-    Note over User, UI: Initiation
-    User->>UI: Click "Connect Wallet"
-    UI->>API: Request Auth Challenge
-    API->>DB: Create Nonce
-    API-->>UI: Return Challenge (Nonce)
+    rect rgb(240, 248, 255)
+    Note over User, API: 1. Challenge Request
+    User->>UI: Connect Wallet
+    UI->>API: Request Nonce
+    API-->>UI: Return Nonce
     end
 
-    rect rgb(255, 240, 230)
-    Note over UI, Xaman: Signing
+    rect rgb(255, 250, 240)
+    Note over User, API: 2. Signing
     UI->>Xaman: Request Sign (Nonce)
-    Xaman->>User: Prompt to Sign
-    User->>Xaman: Approve Signature
-    Xaman-->>UI: Return Signed Payload
+    Xaman->>User: Approve Sign
+    User->>Xaman: Signed
+    Xaman-->>UI: Return Signature
     end
 
-    rect rgb(230, 255, 230)
-    Note over UI, DB: Verification
+    rect rgb(240, 255, 240)
+    Note over User, API: 3. Verification
     UI->>API: Verify Signature
-    API->>API: Validate Signature & Nonce
-    API->>DB: Fetch/Create User
-    API-->>UI: Return Session Token
-    UI->>User: Login Successful
+    API->>API: Validate & Create Session
+    API-->>UI: JWT Token
     end
 ```
 
@@ -199,16 +169,16 @@ sequenceDiagram
 
 ## 🔄 Fund Creation Lifecycle
 
-The lifecycle of a fund from inception to active management, involving multiple compliance checks and on-chain instantiation.
+The fund creation process is a rigorous workflow ensuring all regulatory requirements are met before the fund is deployed on-chain.
 
 ```mermaid
 stateDiagram-v2
-    classDef state fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef active fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    classDef primary fill:#0D47A1,color:#fff,stroke:#000,stroke-width:2px;
+    classDef success fill:#2E7D32,color:#fff,stroke:#000,stroke-width:2px;
+    classDef error fill:#C62828,color:#fff,stroke:#000,stroke-width:2px;
 
-    [*] --> Draft:::state
-    Draft --> PendingApproval:::state: Submit for Review
+    [*] --> Draft
+    Draft --> PendingApproval: Submit
     
     state ComplianceCheck {
         [*] --> KYC
@@ -219,33 +189,36 @@ stateDiagram-v2
     
     PendingApproval --> ComplianceCheck
     
-    ComplianceCheck --> Approved:::active: Checks Pass
-    ComplianceCheck --> Rejected:::error: Checks Fail
+    ComplianceCheck --> Approved: Pass
+    ComplianceCheck --> Rejected: Fail
     
-    Approved --> OnChainSetup:::state: Initiate XRPL Setup
+    Approved --> OnChainSetup: Deploy
     
     state OnChainSetup {
-        [*] --> MPTCreation
-        MPTCreation --> DomainSetup
-        DomainSetup --> DIDRegistration
-        DIDRegistration --> [*]
+        [*] --> CreateMPT
+        CreateMPT --> SetupDomain
+        SetupDomain --> RegisterDID
+        RegisterDID --> [*]
     }
     
-    OnChainSetup --> Active:::active: Fund Live
-    
-    Active --> Suspended:::error: Compliance Trigger
+    OnChainSetup --> Active
+    Active --> Suspended: Violation
     Suspended --> Active: Resolved
-    
-    Active --> Liquidating:::state: End of Life
-    Liquidating --> Closed:::state: Final Settlement
+    Active --> Liquidating: Close
+    Liquidating --> Closed
     Closed --> [*]
+
+    class Active success
+    class Closed primary
+    class Rejected error
+    class Suspended error
 ```
 
 ---
 
 ## 💰 Investment Subscription Flow
 
-The process for an investor to subscribe to a fund, including KYC validation and token issuance.
+Investors subscribe to funds using a seamless flow that handles KYC verification and token issuance in a single atomic process.
 
 ```mermaid
 sequenceDiagram
@@ -253,39 +226,22 @@ sequenceDiagram
     participant Inv as Investor
     participant UI as Frontend
     participant API as Backend
-    participant Compliance as Compliance Engine
     participant XRPL as XRP Ledger
 
-    rect rgb(240, 240, 240)
-    Note right of Inv: Request Phase
-    Inv->>UI: Request Subscription (Amount)
-    UI->>API: Submit Subscription Request
+    rect rgb(240, 248, 255)
+    Note right of Inv: Request
+    Inv->>UI: Subscribe (100k XRP)
+    UI->>API: Validate Compliance
+    API-->>UI: Approved
     end
 
-    rect rgb(255, 250, 230)
-    Note right of API: Compliance Phase
-    API->>Compliance: Validate Eligibility (KYC/AML)
-    Compliance->>Compliance: Check Accreditation
-    Compliance->>Compliance: Check Limits
-    end
-
-    alt Not Eligible
-        Compliance-->>API: Reject
-        API-->>UI: Reject (Compliance Error)
-    else Eligible
-        Compliance-->>API: Approve
-        API-->>UI: Approve Request
-        
-        rect rgb(230, 255, 230)
-        Note right of Inv: Settlement Phase
-        UI->>Inv: Prompt Payment (XRP/Token)
-        Inv->>XRPL: Send Payment Tx
-        XRPL-->>API: Tx Confirmed (Webhook/Poll)
-        API->>API: Calculate Share Amount
-        API->>XRPL: Issue MPT Tokens (Payment)
-        XRPL-->>Inv: Receive Fund Shares
-        API->>API: Update Fund NAV & Holdings
-        end
+    rect rgb(240, 255, 240)
+    Note right of Inv: Settlement
+    UI->>Inv: Sign Payment
+    Inv->>XRPL: Send XRP
+    XRPL-->>API: Payment Confirmed
+    API->>XRPL: Issue Fund Tokens
+    XRPL-->>Inv: Tokens Received
     end
 ```
 
@@ -293,7 +249,7 @@ sequenceDiagram
 
 ## 💸 Redemption Flow
 
-The process for an investor to redeem their shares for the underlying asset or base currency.
+Redemptions are automated but subject to liquidity and lock-up period checks.
 
 ```mermaid
 sequenceDiagram
@@ -303,25 +259,20 @@ sequenceDiagram
     participant API as Backend
     participant XRPL as XRP Ledger
 
-    rect rgb(240, 240, 240)
+    rect rgb(240, 248, 255)
     Note right of Inv: Request
-    Inv->>UI: Request Redemption (Shares)
-    UI->>API: Check Liquidity & Lockup
+    Inv->>UI: Redeem (50 Tokens)
+    UI->>API: Check Lock-up & Liquidity
+    API-->>UI: Approved
     end
 
-    alt Locked / No Liquidity
-        API-->>UI: Reject Request
-    else Approved
-        rect rgb(230, 255, 230)
-        Note right of Inv: Execution
-        UI->>Inv: Prompt Share Return
-        Inv->>XRPL: Send MPT Tokens (Return)
-        XRPL-->>API: Tx Confirmed
-        API->>API: Calculate Redemption Value
-        API->>XRPL: Send Settlement (XRP/Stablecoin)
-        XRPL-->>Inv: Receive Funds
-        API->>API: Burn Shares & Update NAV
-        end
+    rect rgb(240, 255, 240)
+    Note right of Inv: Settlement
+    UI->>Inv: Sign Token Return
+    Inv->>XRPL: Send Tokens
+    XRPL-->>API: Tokens Burned
+    API->>XRPL: Send Settlement (XRP)
+    XRPL-->>Inv: XRP Received
     end
 ```
 
@@ -329,96 +280,92 @@ sequenceDiagram
 
 ## 🏦 Lending Protocol (XLS-65)
 
-Integration with the native XRPL Lending Protocol for yield generation and leverage.
+We integrate the native **XLS-65 Lending Protocol** to allow funds to earn yield on idle assets.
 
 ```mermaid
-flowchart TD
-    %% Styles
-    classDef process fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
-    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef success fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+graph TD
+    %% Theme: Institutional
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef success fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
+    classDef error fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
 
-    Start[Start] --> CreatePool[Create Loan Broker / Pool]:::process
-    CreatePool --> SetTerms[Set Interest & Collateral Terms]:::process
-    SetTerms --> ActivePool{Pool Active?}:::decision
+    Start([Start]) --> CreatePool[Create Loan Pool]:::primary
+    CreatePool --> Terms[Set Terms]:::primary
+    Terms --> Active{Is Active?}:::decision
     
-    ActivePool -- Yes --> Borrower[Borrower Request]:::process
-    ActivePool -- No --> Error[Error: Pool Inactive]:::error
+    Active -- Yes --> Request[Borrow Request]:::primary
+    Active -- No --> Stop([Stop]):::error
 
-    Borrower --> CheckCollateral{Sufficient Collateral?}:::decision
-    CheckCollateral -- Yes --> CreateLoan[Create Loan Object]:::process
-    CheckCollateral -- No --> Reject[Reject Request]:::error
+    Request --> Collateral{Collateral OK?}:::decision
+    Collateral -- Yes --> Fund[Fund Loan]:::success
+    Collateral -- No --> Reject[Reject]:::error
 
-    CreateLoan --> FundLoan[Lender Funds Loan]:::process
-    FundLoan --> ActiveLoan[Loan Active]:::success
+    Fund --> Monitor[Monitor Health]:::primary
+    Monitor --> Repay{Repaid?}:::decision
     
-    ActiveLoan --> Repay{Repayment?}:::decision
-    Repay -- Full --> CloseLoan[Close Loan & Return Collateral]:::success
-    Repay -- Partial --> UpdateLoan[Update Balance]:::process
+    Repay -- Yes --> Close[Close Loan]:::success
+    Repay -- No --> Default{Default?}:::decision
     
-    ActiveLoan --> Default{Default Condition?}:::decision
-    Default -- Yes --> Liquidate[Liquidate Collateral]:::error
-    Liquidate --> CloseLoan
+    Default -- Yes --> Liquidate[Liquidate]:::error
+    Default -- No --> Monitor
 ```
 
 ---
 
 ## 🛡️ Permissioned Domains (XLS-80)
 
-Using XLS-80 to enforce strict access control for institutional funds.
+**XLS-80** is the backbone of our compliance layer, ensuring that tokens can only be held by authorized wallets.
 
 ```mermaid
 graph LR
-    %% Styles
-    classDef domain fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
-    classDef actor fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
-    classDef action fill:#fff3e0,stroke:#ef6c00,stroke-width:2px;
+    %% Theme: Institutional
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef action fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
+    classDef block fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
 
-    subgraph "Permissioned Domain (XLS-80)"
-        Owner[Domain Owner]:::domain
-        Rules[Access Rules]:::domain
-        Members[Member List]:::domain
+    subgraph "Permissioned Environment"
+        Manager[Fund Manager]:::primary
+        Whitelist[Access List]:::secondary
     end
 
-    Investor((Investor)):::actor -->|Request Access| Owner
-    Owner -->|Verify Credential| Issuer[Credential Issuer]:::actor
-    Issuer -->|Valid Credential| Owner
-    Owner -->|Add Member| Members
+    Inv1((Verified Inv)):::primary -->|Request| Manager
+    Inv2((Unverified)):::secondary -->|Request| Manager
+
+    Manager -->|Check Creds| Whitelist
     
-    Members -->|Allowed| Trade[Trade/Hold Asset]:::action
-    Investor -->|Not Member| Block[Blocked Transaction]:::action
+    Whitelist -->|Approved| Trade[Allow Trade]:::action
+    Whitelist -->|Rejected| Block[Block Trade]:::block
 ```
 
 ---
 
 ## 🆔 DID Identity Verification (XLS-40)
 
-Decentralized Identity implementation for self-sovereign compliance.
+We use **Decentralized Identifiers (DIDs)** to link on-chain accounts to off-chain identity documents without exposing sensitive data.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant User
     participant Issuer as KYC Provider
-    participant Ledger as XRPL
-    participant Fund as Fund Manager
+    participant XRPL
+    participant Fund
+
+    rect rgb(240, 248, 255)
+    Note right of User: Identity Issuance
+    User->>Issuer: Submit Passport
+    Issuer->>Issuer: Verify
+    Issuer->>XRPL: Issue DID Credential
+    end
 
     rect rgb(240, 255, 240)
-    Note right of User: Identity Creation
-    User->>Issuer: Submit ID Documents
-    Issuer->>Issuer: Verify Identity
-    Issuer->>Ledger: Issue DID Credential (DIDSet)
-    User->>Ledger: Claim DID
-    end
-    
-    rect rgb(240, 240, 255)
-    Note right of User: Verification
-    User->>Fund: Request Fund Access
-    Fund->>Ledger: Resolve DID Document
-    Ledger-->>Fund: Return DID Document
-    Fund->>Fund: Verify Verifiable Credential (VC)
-    Fund-->>User: Grant Access
+    Note right of User: Access Control
+    User->>Fund: Request Access
+    Fund->>XRPL: Check DID
+    XRPL-->>Fund: Valid Credential
+    Fund-->>User: Access Granted
     end
 ```
 
@@ -426,91 +373,75 @@ sequenceDiagram
 
 ## ✅ Compliance Workflow
 
-Automated compliance engine ensuring all transactions meet regulatory standards.
+Every transaction passes through a multi-stage compliance engine.
 
 ```mermaid
-flowchart TD
-    %% Styles
-    classDef check fill:#e0f7fa,stroke:#006064,stroke-width:2px;
-    classDef pass fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef fail fill:#ffebee,stroke:#b71c1c,stroke-width:2px;
+graph TD
+    %% Theme: Institutional
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef stop fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
+    classDef pass fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
-    Tx[New Transaction] --> KYC{KYC Verified?}:::check
-    KYC -- No --> Block[Block Transaction]:::fail
-    KYC -- Yes --> AML{AML Check Passed?}:::check
+    Tx[Transaction]:::primary --> KYC{KYC?}:::decision
+    KYC -- No --> Block1[Block]:::stop
+    KYC -- Yes --> AML{AML?}:::decision
     
-    AML -- No --> Flag[Flag for Review]:::fail
-    AML -- Yes --> Geo{Geo Restriction?}:::check
+    AML -- No --> Block2[Block]:::stop
+    AML -- Yes --> Geo{Geo?}:::decision
     
-    Geo -- Restricted --> Block
-    Geo -- Allowed --> InvestorType{Investor Type?}:::check
+    Geo -- Fail --> Block3[Block]:::stop
+    Geo -- Pass --> Limit{Limits?}:::decision
     
-    InvestorType -- Retail --> Limit{Within Limits?}:::check
-    InvestorType -- Institutional --> Approve[Approve]:::pass
-    
-    Limit -- Exceeded --> Block
-    Limit -- OK --> Approve
+    Limit -- Fail --> Block4[Block]:::stop
+    Limit -- Pass --> Execute[Execute]:::pass
 ```
 
 ---
 
 ## ⚖️ Portfolio Rebalancing
 
-Logic for maintaining target asset allocations.
+Automated rebalancing ensures the fund maintains its target asset allocation.
 
 ```mermaid
 graph TD
-    %% Styles
-    classDef step fill:#fff8e1,stroke:#ff6f00,stroke-width:2px;
-    classDef calc fill:#e0f2f1,stroke:#004d40,stroke-width:2px;
-    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    %% Theme: Institutional
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef action fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
-    Start[Trigger Rebalance]:::step --> FetchPrices[Fetch Current Asset Prices]:::step
-    FetchPrices --> CalcNAV[Calculate Total NAV]:::calc
-    CalcNAV --> Compare[Compare vs Target Allocation]:::calc
+    Start[Check Portfolio]:::primary --> Prices[Fetch Prices]:::primary
+    Prices --> Calc[Calc Weights]:::primary
+    Calc --> Drift{Drift > 5%?}:::decision
     
-    Compare --> Drift{Drift > Threshold?}:::calc
-    Drift -- No --> End[No Action]:::step
-    Drift -- Yes --> GenOrders[Generate Buy/Sell Orders]:::action
+    Drift -- No --> Sleep[Wait]:::primary
+    Drift -- Yes --> Plan[Gen Orders]:::primary
     
-    GenOrders --> Optimize[Optimize Execution]:::calc
-    Optimize --> Execute[Execute on DEX]:::action
-    Execute --> Update[Update Portfolio State]:::step
+    Plan --> Execute[Execute Swaps]:::action
+    Execute --> Verify[Verify State]:::primary
 ```
 
 ---
 
 ## 🤝 Settlement Process
 
-End-to-end settlement flow for fund subscriptions and redemptions.
-
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Order as Order Management
-    participant Compliance as Compliance Engine
-    participant Treasury as Treasury System
-    participant Ledger as XRPL
+    participant OMS as Order Mgmt
+    participant Treasury
+    participant XRPL
 
-    rect rgb(255, 250, 240)
-    Note right of Order: Pre-Settlement
-    Order->>Compliance: Validate Order
-    Compliance-->>Order: Validated
-    Order->>Treasury: Reserve Funds/Assets
+    rect rgb(240, 248, 255)
+    OMS->>Treasury: Initiate Settlement
+    Treasury->>XRPL: Create Escrow
+    XRPL-->>Treasury: Escrow ID
     end
 
-    rect rgb(240, 255, 255)
-    Note right of Treasury: On-Chain Execution
-    Treasury->>Ledger: Create Escrow (Optional)
-    Ledger-->>Treasury: Escrow Created
-    Treasury->>Order: Settlement Ready
-    Order->>Ledger: Execute Payment/Transfer
-    Ledger-->>Order: Settlement Finalized
-    end
-
-    rect rgb(240, 240, 240)
-    Note right of Order: Post-Settlement
-    Order->>Order: Update Records
+    rect rgb(240, 255, 240)
+    Treasury->>OMS: Ready
+    OMS->>XRPL: Fulfill Escrow
+    XRPL-->>OMS: Settled
     end
 ```
 
@@ -518,169 +449,101 @@ sequenceDiagram
 
 ## 🔌 XRPL Interaction Layer
 
-How the application interfaces with the XRP Ledger.
-
 ```mermaid
 classDiagram
     class XRPLService {
         +connect()
-        +disconnect()
-        +submitTransaction()
-        +subscribeToStream()
+        +submitTx()
+        +listen()
     }
-    
-    class TransactionBuilder {
-        +buildPayment()
-        +buildTrustSet()
-        +buildMPTCreate()
-        +buildLoanSet()
-        +buildDIDSet()
+    class TxBuilder {
+        +payment()
+        +trustSet()
+        +mptCreate()
     }
-    
-    class WalletManager {
+    class Wallet {
         +sign()
         +verify()
-        +deriveAddress()
-        +manageKeys()
-    }
-    
-    class EventListener {
-        +onTransaction()
-        +onLedgerClosed()
-        +onValidationReceived()
     }
 
-    XRPLService --> TransactionBuilder : uses
-    XRPLService --> WalletManager : uses
-    XRPLService --> EventListener : manages
+    XRPLService --> TxBuilder
+    XRPLService --> Wallet
+    
+    style XRPLService fill:#0D47A1,color:#fff
+    style TxBuilder fill:#fff,stroke:#0D47A1
+    style Wallet fill:#fff,stroke:#0D47A1
 ```
 
 ---
 
 ## ⚛️ Frontend Component Hierarchy
 
-Structure of the React application.
-
 ```mermaid
 graph TD
-    %% Styles
-    classDef page fill:#e1bee7,stroke:#4a148c,stroke-width:2px;
-    classDef comp fill:#b3e5fc,stroke:#01579b,stroke-width:2px;
-    classDef atom fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px;
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
 
-    App:::page --> AuthProvider:::comp
-    App --> Router:::comp
+    App:::primary --> Auth:::secondary
+    App --> Dashboard:::secondary
     
-    AuthProvider --> Login:::page
-    AuthProvider --> Dashboard:::page
+    Dashboard --> Funds:::secondary
+    Dashboard --> Investors:::secondary
+    Dashboard --> Analytics:::secondary
     
-    Dashboard --> Sidebar:::comp
-    Dashboard --> Header:::comp
-    Dashboard --> MainContent:::comp
-    
-    MainContent --> FundList:::comp
-    MainContent --> InvestorList:::comp
-    MainContent --> AssetAllocation:::comp
-    MainContent --> TransactionHistory:::comp
-    
-    FundList --> FundCard:::atom
-    FundCard --> FundMetrics:::atom
-    
-    AssetAllocation --> Charts:::atom
-    Charts --> PieChart:::atom
-    Charts --> LineChart:::atom
+    Funds --> FundCard:::primary
+    Investors --> InvestorRow:::primary
 ```
 
 ---
 
 ## 🔔 Notification System
 
-Event-driven notification architecture.
-
 ```mermaid
 graph LR
-    %% Styles
-    classDef event fill:#ffccbc,stroke:#bf360c,stroke-width:2px;
-    classDef engine fill:#cfd8dc,stroke:#455a64,stroke-width:2px;
-    classDef output fill:#dcedc8,stroke:#33691e,stroke-width:2px;
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef output fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
-    Event[System Event]:::event -->|Trigger| Engine[Notification Engine]:::engine
-    Engine -->|Filter| Prefs[User Preferences]:::engine
+    Event[Event]:::primary --> Engine[Engine]:::primary
+    Engine --> Filter[Filter]:::primary
     
-    Prefs -->|Push| Push[Push Notification]:::output
-    Prefs -->|Email| Email[Email Service]:::output
-    Prefs -->|In-App| DB[Database Store]:::output
-    
-    Push --> User((User))
-    Email --> User
-    DB --> UI[Frontend Alert]
+    Filter --> Push[Push]:::output
+    Filter --> Email[Email]:::output
 ```
 
 ---
 
 ## 📉 Risk Management
 
-Calculation of risk metrics for funds.
-
 ```mermaid
 graph TD
-    %% Styles
-    classDef input fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef calc fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef output fill:#f8bbd0,stroke:#880e4f,stroke-width:2px;
+    classDef primary fill:#0D47A1,stroke:#000,stroke-width:2px,color:#fff;
+    classDef calc fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
+    classDef out fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
-    Data[Historical Data]:::input --> Returns[Calculate Returns]:::calc
-    Returns --> Volatility[Calculate Volatility]:::calc
-    Returns --> VaR[Calculate VaR 95% & 99%]:::calc
-    Returns --> Drawdown[Calculate Max Drawdown]:::calc
+    Data[Market Data]:::primary --> VaR[Calc VaR]:::calc
+    Data --> Vol[Calc Volatility]:::calc
     
-    Benchmark[Benchmark Data]:::input --> Beta[Calculate Beta]:::calc
-    Benchmark --> Alpha[Calculate Alpha]:::calc
-    
-    Volatility --> Sharpe[Sharpe Ratio]:::output
-    Volatility --> Sortino[Sortino Ratio]:::output
-    
-    VaR --> Report[Risk Report]:::output
-    Drawdown --> Report
-    Sharpe --> Report
+    VaR --> Report[Risk Report]:::out
+    Vol --> Report
 ```
 
 ---
 
 ## 📝 Audit Trail
 
-Immutable logging of all system actions.
-
 ```mermaid
 sequenceDiagram
     autonumber
     participant User
     participant System
-    participant Logger
-    participant DB
-    participant Ledger as XRPL
+    participant Log
+    participant XRPL
 
-    rect rgb(255, 240, 240)
-    Note right of User: Action
-    User->>System: Perform Action
-    System->>System: Execute Logic
-    end
-
-    rect rgb(240, 240, 255)
-    Note right of System: Logging
-    System->>Logger: Log Event (Actor, Action, Data)
-    Logger->>Logger: Hash Entry
-    Logger->>DB: Store Log Entry
-    end
-    
-    rect rgb(240, 255, 240)
-    Note right of Logger: Anchoring
-    opt Periodic Anchor
-        Logger->>Ledger: Submit Hash to Ledger
-        Ledger-->>Logger: Tx Hash (Proof)
-        Logger->>DB: Update Log with Proof
-    end
-    end
+    User->>System: Action
+    System->>Log: Create Entry
+    Log->>Log: Hash Data
+    Log->>XRPL: Anchor Hash
+    XRPL-->>Log: Proof
 ```
 
 ---
@@ -688,8 +551,8 @@ sequenceDiagram
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Node.js v18+
-- npm or yarn
+- **Node.js v18+**
+- **npm** or **yarn**
 
 ### Installation
 
