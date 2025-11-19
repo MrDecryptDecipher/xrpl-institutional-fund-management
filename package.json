@@ -10,10 +10,10 @@
     "dev:xaman": "npx tsx src/xaman-payload-server.ts",
     "build": "vite build",
     "lint": "tsc -p convex -noEmit --pretty false && tsc -p . -noEmit --pretty false && convex dev --once && vite build",
-    "test": "npx tsx run_all_xrpl_tests.ts",
-    "test:integration": "npx tsx test_real_xrpl_integration.ts",
-    "test:lending": "npx tsx test_lending_protocol_real.ts",
-    "test:domains": "npx tsx test_permissioned_domains_real.ts",
+    "test": "npx tsx scripts/run_all_xrpl_tests.ts",
+    "test:integration": "npx tsx scripts/test_real_xrpl_integration.ts",
+    "test:lending": "npx tsx scripts/test_lending_protocol_real.ts",
+    "test:domains": "npx tsx scripts/test_permissioned_domains_real.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

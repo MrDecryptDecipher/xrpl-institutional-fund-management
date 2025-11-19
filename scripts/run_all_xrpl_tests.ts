@@ -15,7 +15,7 @@ async function runTestScript(scriptName: string): Promise<{ success: boolean; ou
       cwd: process.cwd(),
       timeout: 60000 // 60 second timeout
     });
-    
+
     const output = stdout + stderr;
     console.log(`✅ ${scriptName} completed`);
     return { success: true, output };
@@ -28,15 +28,15 @@ async function runTestScript(scriptName: string): Promise<{ success: boolean; ou
 async function runAllTests() {
   console.log("🧪 XRPL INSTITUTIONAL FUND MANAGEMENT PROTOCOL - COMPREHENSIVE TEST SUITE");
   console.log("=".repeat(80));
-  
+
   const testScripts = [
-    'test_real_xrpl_integration.ts',
-    'test_lending_protocol_real.ts',
-    'test_permissioned_domains_real.ts'
+    'scripts/test_real_xrpl_integration.ts',
+    'scripts/test_lending_protocol_real.ts',
+    'scripts/test_permissioned_domains_real.ts'
   ];
-  
+
   const results: Array<{ name: string; success: boolean; error?: string }> = [];
-  
+
   for (const script of testScripts) {
     try {
       const result = await runTestScript(script);
@@ -45,7 +45,7 @@ async function runAllTests() {
         success: result.success,
         error: result.error
       });
-      
+
       // Add a small delay between tests
       await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (error) {
@@ -56,15 +56,15 @@ async function runAllTests() {
       });
     }
   }
-  
+
   // Summary
   console.log("\n" + "=".repeat(80));
   console.log("📊 TEST RESULTS SUMMARY");
   console.log("=".repeat(80));
-  
+
   let passedTests = 0;
   let failedTests = 0;
-  
+
   for (const result of results) {
     if (result.success) {
       console.log(`✅ ${result.name}: PASSED`);
@@ -75,11 +75,11 @@ async function runAllTests() {
       failedTests++;
     }
   }
-  
+
   console.log("\n" + "=".repeat(80));
   console.log(`📈 FINAL RESULTS: ${passedTests} PASSED, ${failedTests} FAILED`);
   console.log("=".repeat(80));
-  
+
   if (failedTests === 0) {
     console.log("🎉 ALL TESTS PASSED! XRPL INSTITUTIONAL FUND MANAGEMENT PROTOCOL IS WORKING CORRECTLY");
     console.log("\n✅ MPT (XLS-33) - Multi-Purpose Tokens");
