@@ -4,17 +4,23 @@ import os
 import requests
 
 # Premium Institutional Theme
+# Enterprise Light Theme (High Contrast)
 THEME_CONFIG = {
-    "theme": "base",
+    "theme": "default",
     "themeVariables": {
-        "primaryColor": "#0D47A1",
-        "primaryTextColor": "#ffffff",
-        "primaryBorderColor": "#002171",
-        "lineColor": "#2962FF",
+        "primaryColor": "#1E88E5",
+        "primaryTextColor": "#000000",
+        "primaryBorderColor": "#000000",
+        "lineColor": "#000000",
         "secondaryColor": "#E3F2FD",
-        "tertiaryColor": "#F5F5F5",
+        "tertiaryColor": "#FFFFFF",
         "fontFamily": "Arial",
-        "fontSize": "16px"
+        "fontSize": "16px",
+        "mainBkg": "#FFFFFF",
+        "background": "#FFFFFF",
+        "nodeBorder": "#000000",
+        "clusterBkg": "#F5F5F5",
+        "clusterBorder": "#000000"
     }
 }
 
@@ -22,11 +28,11 @@ THEME_CONFIG = {
 DIAGRAMS = {
     "diagram-1.svg": """graph TD
     %% Theme: Institutional Technical
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef secondary fill:#E3F2FD,stroke:#0D47A1,stroke-width:1px,color:#000;
-    classDef ledger fill:#1B5E20,stroke:#003300,stroke-width:2px,color:#fff;
-    classDef external fill:#4A148C,stroke:#2A0055,stroke-width:2px,color:#fff;
-    classDef component fill:#fff,stroke:#0D47A1,stroke-width:1px,stroke-dasharray: 5 5,color:#000;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#E3F2FD,stroke:#1E88E5,stroke-width:1px,color:#000;
+    classDef ledger fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
+    classDef external fill:#7B1FA2,stroke:#000,stroke-width:2px,color:#fff;
+    classDef component fill:#fff,stroke:#000,stroke-width:1px,stroke-dasharray: 5 5,color:#000;
 
     subgraph "Frontend Layer (Client)"
         UI[React UI / Vite Application]:::primary
@@ -161,25 +167,25 @@ DIAGRAMS = {
     User->>UI: Click "Connect Wallet"
     UI->>API: mutation createChallenge(address)
     API->>API: Generate Random Nonce
-    API-->>UI: Return { nonce, token }
+    API-->>UI: Return (nonce, token)
 
     Note over User, XRPL: Phase 2: Cryptographic Signing
     UI->>Xaman: Payload: SignIn(nonce)
     Xaman->>User: Prompt "Sign to Login"
     User->>Xaman: Biometric Confirm
     Xaman->>Xaman: Sign with Private Key
-    Xaman-->>UI: Return { hexBlob, signature }
+    Xaman-->>UI: Return (hexBlob, signature)
 
     Note over User, XRPL: Phase 3: Verification
     UI->>API: mutation verifySignature(blob, sig)
     API->>XRPL: verify(signature, pubKey)
     XRPL-->>API: valid: true
     API->>API: Generate Session JWT
-    API-->>UI: Return { authToken }
+    API-->>UI: Return (authToken)
     UI->>UI: Store Token in LocalStorage
 """,
     "diagram-4.svg": """stateDiagram-v2
-    classDef primary fill:#0D47A1,color:#fff,stroke:#000,stroke-width:2px;
+    classDef primary fill:#1E88E5,color:#fff,stroke:#000,stroke-width:2px;
     classDef success fill:#2E7D32,color:#fff,stroke:#000,stroke-width:2px;
     classDef error fill:#C62828,color:#fff,stroke:#000,stroke-width:2px;
 
@@ -266,39 +272,39 @@ DIAGRAMS = {
     API->>API: Burn Tokens / Update Supply
 """,
     "diagram-7.svg": """graph TD
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
-    classDef action fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
-    classDef error fill:#C62828,stroke:#550000,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#1E88E5,stroke-width:2px,color:#000;
+    classDef action fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
+    classDef error fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
 
-    Start([Lending Protocol Init]) --> PoolConfig[Configure Loan Pool (XLS-65)]:::primary
-    PoolConfig --> SetRates[Set Interest Model]:::primary
-    SetRates --> Publish[Publish to Ledger]:::action
+    Start([Lending Protocol Init]) --> PoolConfig["Configure Loan Pool (XLS-65)"]:::primary
+    PoolConfig --> SetRates["Set Interest Model"]:::primary
+    SetRates --> Publish["Publish to Ledger"]:::action
 
     subgraph "Borrowing Lifecycle"
-        Request[Borrow Request]:::primary --> Collateral{Collateral > 150%?}:::decision
-        Collateral -- Yes --> Approve[Approve Loan]:::action
-        Collateral -- No --> Reject[Reject Request]:::error
+        Request["Borrow Request"]:::primary --> Collateral{"Collateral > 150%?"}:::decision
+        Collateral -- Yes --> Approve["Approve Loan"]:::action
+        Collateral -- No --> Reject["Reject Request"]:::error
         
-        Approve --> Escrow[Lock Collateral]:::primary
-        Escrow --> Transfer[Transfer Principal]:::action
+        Approve --> Escrow["Lock Collateral"]:::primary
+        Escrow --> Transfer["Transfer Principal"]:::action
         
-        Transfer --> Monitor[Health Monitor]:::primary
-        Monitor --> Health{LTV < 80%?}:::decision
+        Transfer --> Monitor["Health Monitor"]:::primary
+        Monitor --> Health{"LTV < 80%?"}:::decision
         
-        Health -- Yes --> Wait[Continue]:::primary
-        Health -- No --> Liquidate[Trigger Liquidation]:::error
+        Health -- Yes --> Wait["Continue"]:::primary
+        Health -- No --> Liquidate["Trigger Liquidation"]:::error
         
-        Wait --> Repay{Repayment Rx?}:::decision
-        Repay -- Yes --> Unlock[Unlock Collateral]:::action
+        Wait --> Repay{"Repayment Rx?"}:::decision
+        Repay -- Yes --> Unlock["Unlock Collateral"]:::action
         Repay -- No --> Monitor
     end
 """,
     "diagram-8.svg": """graph LR
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef secondary fill:#fff,stroke:#0D47A1,stroke-width:1px,color:#000;
-    classDef action fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
-    classDef block fill:#C62828,stroke:#550000,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#fff,stroke:#1E88E5,stroke-width:1px,color:#000;
+    classDef action fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
+    classDef block fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
 
     subgraph "XLS-80 Permissioned Domain"
         Manager[Fund Manager Account]:::primary
@@ -345,10 +351,10 @@ DIAGRAMS = {
     Fund-->>User: Access Granted (TrustLine Auth)
 """,
     "diagram-10.svg": """graph TD
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
-    classDef stop fill:#C62828,stroke:#550000,stroke-width:2px,color:#fff;
-    classDef pass fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#1E88E5,stroke-width:2px,color:#000;
+    classDef stop fill:#C62828,stroke:#000,stroke-width:2px,color:#fff;
+    classDef pass fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
     Tx[Incoming Transaction]:::primary --> Decode[Decode Payload]:::primary
     Decode --> KYC{KYC Verified?}:::decision
@@ -366,9 +372,9 @@ DIAGRAMS = {
     Limit -- OK --> Execute[Execute on Ledger]:::pass
 """,
     "diagram-11.svg": """graph TD
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef decision fill:#fff,stroke:#0D47A1,stroke-width:2px,color:#000;
-    classDef action fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef decision fill:#fff,stroke:#1E88E5,stroke-width:2px,color:#000;
+    classDef action fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
     Start[Portfolio Monitor]:::primary --> Prices[Fetch Oracle Prices]:::primary
     Prices --> Calc[Calculate Current Weights]:::primary
@@ -436,15 +442,15 @@ DIAGRAMS = {
     XRPLService *-- WalletManager : uses
     XRPLService *-- LedgerListener : manages
     
-    style XRPLService fill:#0D47A1,color:#fff
-    style TransactionBuilder fill:#fff,stroke:#0D47A1
-    style WalletManager fill:#fff,stroke:#0D47A1
-    style LedgerListener fill:#fff,stroke:#0D47A1
+    style XRPLService fill:#1E88E5,color:#fff
+    style TransactionBuilder fill:#fff,stroke:#1E88E5
+    style WalletManager fill:#fff,stroke:#1E88E5
+    style LedgerListener fill:#fff,stroke:#1E88E5
 """,
     "diagram-14.svg": """graph TD
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef secondary fill:#fff,stroke:#0D47A1,stroke-width:1px,color:#000;
-    classDef component fill:#E3F2FD,stroke:#0D47A1,stroke-width:1px,color:#000;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef secondary fill:#fff,stroke:#1E88E5,stroke-width:1px,color:#000;
+    classDef component fill:#E3F2FD,stroke:#1E88E5,stroke-width:1px,color:#000;
 
     App[App Root]:::primary --> AuthProvider[AuthProvider Context]:::secondary
     AuthProvider --> Router[React Router]:::secondary
@@ -468,9 +474,9 @@ DIAGRAMS = {
     AnalyticsView --> AuditLog[Audit Log Table]:::component
 """,
     "diagram-15.svg": """graph LR
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef process fill:#fff,stroke:#0D47A1,stroke-width:1px,color:#000;
-    classDef output fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef process fill:#fff,stroke:#1E88E5,stroke-width:1px,color:#000;
+    classDef output fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
     Event[Ledger Event / User Action]:::primary --> Ingest[Event Ingestion Engine]:::process
     Ingest --> Queue[Message Queue (Redis)]:::process
@@ -488,9 +494,9 @@ DIAGRAMS = {
     Hook --> UserSystem[External System]:::primary
 """,
     "diagram-16.svg": """graph TD
-    classDef primary fill:#0D47A1,stroke:#002171,stroke-width:2px,color:#fff;
-    classDef calc fill:#fff,stroke:#0D47A1,stroke-width:1px,color:#000;
-    classDef report fill:#2E7D32,stroke:#003300,stroke-width:2px,color:#fff;
+    classDef primary fill:#1E88E5,stroke:#000,stroke-width:2px,color:#fff;
+    classDef calc fill:#fff,stroke:#1E88E5,stroke-width:1px,color:#000;
+    classDef report fill:#2E7D32,stroke:#000,stroke-width:2px,color:#fff;
 
     MarketData[Market Data Feed]:::primary --> Volatility[Volatility Engine]:::calc
     MarketData --> Correlation[Correlation Matrix]:::calc
