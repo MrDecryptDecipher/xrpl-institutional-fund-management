@@ -44,5 +44,3 @@ sequenceDiagram
 - `scripts/`: Utility and test scripts.
 - `tests/`: Automated tests.
 - `docs/`: Documentation.
-- `legacy_docs/`: Archived reports and documentation.
-- `legacy_scripts/`: Archived scripts.
